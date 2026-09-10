@@ -8,17 +8,11 @@ const { WebcastPushConnection } = require('tiktok-live-connector');
  * `value` do gift é uma estimativa simples (repeatCount * diamondCount do tipo de presente).
  */
 function startTiktokListener(username) {
+  const tiktok = new (require("tiktok-live-connector").WebcastPushConnection)(username);
   const emitter = new EventEmitter();
-  const tiktok = new WebcastPushConnection(username);
+  
 
-  tiktok
-    .connect()
-    .then((state) => {
-      console.log(`[tiktok] conectado à live de @${username} (roomId ${state.roomId})`);
-    })
-    .catch((err) => {
-      console.error('[tiktok] falha ao conectar. A conta está ao vivo agora?', err.message);
-    });
+  
 
   tiktok.on('chat', (data) => {
     emitter.emit('chat', {
@@ -49,7 +43,7 @@ function startTiktokListener(username) {
     setTimeout(() => tiktok.connect().catch(() => {}), 5000);
   });
 
-  return emitter;
+  return { emitter, promise: tiktok.connect() };
 }
 
 module.exports = { startTiktokListener };

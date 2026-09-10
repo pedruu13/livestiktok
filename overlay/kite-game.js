@@ -596,3 +596,15 @@ function makeDraggable(elmnt) {
 makeDraggable(document.getElementById("hud"));
 makeDraggable(document.getElementById("leaderboard"));
 makeDraggable(document.getElementById("gift-guide"));
+
+
+// RELÓGIO / TIMER DA LIVE
+let time = 90;
+setInterval(() => {
+  time--;
+  if(time <= 0) time = 90; // Reseta a cada 1 min e meio
+  let m = Math.floor(time / 60);
+  let s = time % 60;
+  const tEl = document.getElementById('timer');
+  if(tEl) tEl.innerText = `0${m}:${s < 10 ? '0' : ''}${s}`;
+}, 1000);

@@ -39,16 +39,18 @@ app.whenReady().then(() => {
   createWindow();
 });
 
-ipcMain.on('start-connection', (event, username) => {
+ipcMain.on('start-connection', async (event, username) => {
   try {
-    const tiktokEvents = startTiktokListener(username);
+    const { emitter: tiktokEvents, promise: connectionPromise } = startTiktokListener(username);
+    
+    await connectionPromise; // TRAVA DE SEGURANÇA: ESPERA CONECTAR DE VERDADE
     
     tiktokEvents.on('chat', (data) => broadcastFunc && broadcastFunc({ type: 'chat', ...data }));
     tiktokEvents.on('gift', (data) => broadcastFunc && broadcastFunc({ type: 'gift', ...data }));
     
     event.reply('connection-status', { 
       success: true, 
-      msg: `Conectado na live de @${username}!` 
+      msg: `SUCESSO! Conectado na live de @${username}!` 
     });
 
     // Abre a janela do jogo automaticamente!
