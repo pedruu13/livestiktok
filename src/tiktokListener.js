@@ -20,22 +20,36 @@ function startTiktokListener(username) {
     });
 
   tiktok.on('chat', (data) => {
+    const userId = data.uniqueId || (data.user && data.user.displayId) || 'usuario';
+    const name = data.nickname || (data.user && data.user.nickname) || userId;
+    const avatarUrl = data.profilePictureUrl || (data.user && data.user.avatarThumb && data.user.avatarThumb.urlList && data.user.avatarThumb.urlList[0]) || '';
+    const text = data.comment || data.content || '';
+
     emitter.emit('chat', {
-      userId: data.uniqueId,
-      name: data.nickname || data.uniqueId,
-      avatarUrl: data.profilePictureUrl,
-      text: data.comment,
+      userId,
+      name,
+      avatarUrl,
+      text
     });
   });
 
   tiktok.on('gift', (data) => {
-    if (data.giftType === 1 && !data.repeatEnd) return;
-    const diamonds = data.diamondCount || 1;
-    const repeats = data.repeatCount || 1;
+    // Compatibilidade com v1 e v2
+    const giftType = data.giftType !== undefined ? data.giftType : (data.gift && data.gift.type) || 1;
+    const repeatEnd = data.repeatEnd !== undefined ? data.repeatEnd : true; // Se não tiver repeatEnd, assume true para registrar
+    const diamonds = data.diamondCount || (data.gift && data.gift.diamondCount) || 1;
+    const repeats = data.repeatCount || data.comboCount || 1;
+
+    const userId = data.uniqueId || (data.user && data.user.displayId) || 'usuario';
+    const name = data.nickname || (data.user && data.user.nickname) || userId;
+    const avatarUrl = data.profilePictureUrl || (data.user && data.user.avatarThumb && data.user.avatarThumb.urlList && data.user.avatarThumb.urlList[0]) || '';
+
+    if (giftType === 1 && !repeatEnd) return;
+
     emitter.emit('gift', {
-      userId: data.uniqueId,
-      name: data.nickname || data.uniqueId,
-      avatarUrl: data.profilePictureUrl,
+      userId,
+      name,
+      avatarUrl,
       value: diamonds * repeats,
     });
   });
