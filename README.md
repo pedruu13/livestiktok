@@ -1,4 +1,4 @@
-# Pipas no Céu — overlay de live da TikTok
+# Pipas no Céu — Overlay de live da TikTok
 
 MVP do jogo de "pipas subindo e cortando a linha uma da outra" que aparece
 como overlay em cima da live. Presentes fazem a pipa da pessoa subir; quando
@@ -9,57 +9,50 @@ mais chance de vencer o corte).
 
 ```
 src/
-  tiktokListener.js -> conecta na live, normaliza eventos de chat/gift
-  wsServer.js        -> repassa esses eventos via WebSocket
-  index.js           -> entrypoint: serve o overlay + liga tudo
+  tiktokListener.js -> conecta na live, normaliza eventos de chat, gift e join (entrada)
+  wsServer.js       -> repassa esses eventos via WebSocket
+main.js             -> entrypoint (Electron): serve o painel de controle e o overlay
 overlay/
   index.html / style.css / kite-game.js -> o jogo em si (Canvas 2D),
-  isso é o que você adiciona no OBS como Browser Source
+  isso é o que você captura (ou abre no OBS)
+dashboard/
+  index.html -> o painel de controle para configurar a live e o som
 ```
 
 ## Rodando
 
 1. `npm install`
-2. `cp .env.example .env` e preencha `TIKTOK_USERNAME`
-3. `npm start` — precisa da conta já **ao vivo** na TikTok
-4. No OBS: **Fontes → + → Navegador (Browser Source)**
+2. `npm start` — Isso abrirá o painel de controle.
+3. Digite o seu @ do TikTok no painel e clique em Conectar (precisa estar **ao vivo**).
+4. No OBS: Pode capturar diretamente a janela sem bordas do jogo que vai abrir, ou adicionar como **Navegador (Browser Source)**:
    - URL: `http://localhost:3001`
    - Largura/altura: a resolução da sua cena (ex: 1080x1920 pra live vertical)
-   - Marque "Atualizar navegador quando a cena ficar ativa"
 
 ## Testando sem estar ao vivo
 
-Abra `http://localhost:3001/?demo=true` — isso liga um modo demo que gera
-presentes falsos de nomes aleatórios a cada ~600ms, só pra você ver o jogo
-funcionando e ajustar o visual antes de ir pra live de verdade.
+Abra `http://localhost:3001/?demo=true` no navegador ou adicione isso no OBS. Isso liga um modo demo que gera 
+presentes e novas entradas na live com nomes aleatórios, só para você ver o jogo
+funcionando (pipas VIPs brigando no alto e pipas comuns embaixo) e ajustar o visual antes de ir pra live.
 
 ## O que já está pronto
 
-- Pipa nasce quando a pessoa comenta, sobe conforme manda presentes (mais
-  presente = "mais cerol" = voa mais alto e serra mais rápido)
-- Cada pipa mira sozinha na pipa viva mais fraca por perto e faz um
-  "debicar" (mergulho) pra tentar cruzar a linha dela — igual no jogo
-  original, não é corte por sorteio de proximidade
-- Depois de cruzar, entra numa fase de "serrando" com barra de progresso
-  visível — quem tem mais poder acumulado serra mais rápido
-- Depois de cortar, a pipa caída fica alguns segundos no ar e quem cortou
-  precisa perseguir e **aparar a rabiola** — só isso conta ponto de verdade
-  (vira "troféu"). Cortar sem aparar não soma no placar, só no contador
-  de cortes que serve de desempate
-- Leaderboard no canto superior esquerdo (top 3 por troféus/rabiolas aparadas)
-- Timer de rodada (90s por padrão) que reinicia tudo ao zerar
+- **Pipas Automáticas**: A pipa nasce com um poder básico no momento em que a pessoa **entra** na live (evento de Join/Member).
+- **Interações (Chat e Presentes)**: Comentar ou mandar presentes aumenta a força da pipa ("mais cerol", voa mais alto e tem escudo).
+- **Combate de Verdade**: Cada pipa mira sozinha na pipa viva mais fraca por perto e faz um
+  "debicar" (mergulho) pra tentar cruzar a linha.
+- **Vantagem Justa**: Quando as linhas se cruzam, quem tem mais poder acumulado tem mais chance de cortar a outra.
+- **Rabiolas e Troféus**: Depois de cortar, a pipa caída fica alguns segundos no ar e quem cortou
+  precisa perseguir e **aparar a rabiola** (conta como troféu no placar).
+- **Garbage Collection (Performance)**: Sistema otimizado com limpeza automática de memória (exclui pipas mortas após 3 segundos) para a live aguentar horas sem travar.
+- **Leaderboard** no canto superior esquerdo (top 3 por troféus e cortes).
+- **Timer de rodada** (5 minutos) que reinicia tudo ao zerar.
 
 ## Próximos ajustes que valem a pena
 
-- **Balanceamento**: hoje `RISE_PER_POWER` e a fórmula de chance de corte em
-  `kite-game.js` são um ponto de partida — ajuste jogando no modo demo.
 - **Persistência entre rodadas**: hoje zera tudo quando o timer acaba; se
   quiser um placar do dia inteiro, salve `power`/`cuts` antes do `kites.clear()`.
-- **Efeitos sonoros**: adicionar um `<audio>` tocado em `spawnCutParticles()`
-  dá um impacto e tanto pra live.
 - **Trocar o visual**: o `style.css` já imita o pôr do sol com casinhas da
-  referência — troque o `background` do `#hud`/`body` ou desenhe o skyline
-  no canvas se quiser mais fidelidade.
+  referência — troque o `background` ou desenhe no canvas se quiser mais fidelidade.
 
 ## Aviso
 
