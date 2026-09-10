@@ -383,7 +383,7 @@ function cutKite(winner, loser) {
     life: 120 // duração de +- 2 segundos na tela
   });
 
-  const fallen = { x: loser.x, y: loser.y, vy: 1.2, createdAt: performance.now(), caughtBy: null };
+  const fallen = { x: loser.x, y: loser.y, vy: -5.0, createdAt: performance.now(), caughtBy: null };
   fallenKites.push(fallen);
   winner.chasing = fallen;
 }
@@ -392,10 +392,16 @@ function updateFallenKites(dt) {
   const now = performance.now();
   fallenKites = fallenKites.filter((f) => {
     f.y += f.vy * dt;
-    f.vy += 0.05 * dt;
+    f.vy += 0.15 * dt; // Gravidade mais forte para ela cair depois de pular
 
     kites.forEach((k) => {
       if (!k.alive || k.chasing !== f) return;
+      
+      // DEFEITO GRAVE CORRIGIDO AQUI: A pipa vencedora estava tão perto que
+      // "aparava a rabiola" no mesmo milissegundo, fazendo o perdedor evaporar!
+      // Agora o perdedor tem 600ms de carência voando antes de poder ser pego.
+      if (now - f.createdAt < 600) return;
+
       const dist = Math.hypot(k.x - f.x, k.y - f.y);
       if (dist < CATCH_DISTANCE) {
         k.trophies += 1;
