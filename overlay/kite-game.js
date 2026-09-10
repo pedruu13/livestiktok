@@ -383,7 +383,7 @@ function cutKite(winner, loser) {
     life: 120 // duração de +- 2 segundos na tela
   });
 
-  const fallen = { x: loser.x, y: loser.y, vy: -5.0, createdAt: performance.now(), caughtBy: null };
+  const fallen = { kite: loser, x: loser.x, y: loser.y, vy: -5.0, createdAt: performance.now(), caughtBy: null };
   fallenKites.push(fallen);
   winner.chasing = fallen;
 }
@@ -410,7 +410,7 @@ function updateFallenKites(dt) {
       }
     });
 
-    const expired = now - f.createdAt > CATCH_WINDOW_MS || f.y > window.innerHeight;
+    const expired = f.y > window.innerHeight + 100; // Só some quando cair fora da tela
     if (expired || f.caughtBy) {
       kites.forEach((k) => { if (k.chasing === f) k.chasing = null; });
       return false;
@@ -419,20 +419,14 @@ function updateFallenKites(dt) {
   });
 }
 
-function drawFallenKites() {
+function drawFallenKites(t) {
   fallenKites.forEach((f) => {
-    ctx.save();
-    ctx.translate(f.x, f.y);
-    ctx.rotate(Math.PI);
-    ctx.beginPath();
-    ctx.moveTo(0, -18);
-    ctx.lineTo(14, 0);
-    ctx.lineTo(0, 18);
-    ctx.lineTo(-14, 0);
-    ctx.closePath();
-    ctx.fillStyle = 'rgba(140,120,160,0.7)';
-    ctx.fill();
-    ctx.restore();
+    if (f.kite) {
+      f.kite.x = f.x;
+      f.kite.y = f.y;
+      f.kite.angle += 0.05; // Rodopia enquanto cai
+      f.kite.draw(t);
+    }
   });
 }
 
@@ -506,14 +500,14 @@ function loop(t) {
     k.alive = false;
     k.deadAt = performance.now();
     spawnCutParticles(k.x, k.y);
-    fallenKites.push({ x: k.x, y: k.y, vy: 1.2, createdAt: performance.now(), caughtBy: null });
+    fallenKites.push({ kite: k, x: k.x, y: k.y, vy: -3.0, createdAt: performance.now(), caughtBy: null });
   }
   activeKites.forEach(k => {
     if (now - k.lastActive > 60000 && k.power < 50) {
       k.alive = false;
       k.deadAt = performance.now();
       spawnCutParticles(k.x, k.y);
-      fallenKites.push({ x: k.x, y: k.y, vy: 1.2, createdAt: performance.now(), caughtBy: null });
+      fallenKites.push({ kite: k, x: k.x, y: k.y, vy: -3.0, createdAt: performance.now(), caughtBy: null });
     }
   });
 
@@ -521,7 +515,7 @@ function loop(t) {
 
   kites.forEach((k) => k.update(t, dt));
   updateFallenKites(dt);
-  drawFallenKites();
+  drawFallenKites(t);
   kites.forEach((k) => k.alive && k.draw(t));
   updateAndDrawParticles(dt);
   updateAndDrawFloatingTexts(dt); // Habilita os textos subindo na tela
