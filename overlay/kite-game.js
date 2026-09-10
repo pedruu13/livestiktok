@@ -75,7 +75,7 @@ class Kite {
     this.power += amount;
     this.targetY = Math.max(
       100, // Margem do topo para não ficar por trás do placar
-      window.innerHeight - 150 - (this.power * 4.0) // Sobe 4 pixels para CADA ponto de poder!
+      (window.innerHeight * 0.6) - (this.power * 4.0) // Sobe 4 pixels para CADA ponto de poder a partir do meio da tela!
     );
 
     // Presentes (qualquer valor >= 5) dão 6 segundos de ESCUDO INVENCÍVEL
@@ -83,6 +83,22 @@ class Kite {
       this.shieldUntil = performance.now() + 6000;
       sfxGift.currentTime = 0;
       sfxGift.play().catch(()=>{});
+      
+      floatingTexts.push({
+        x: this.x,
+        y: this.y - 40,
+        text: `🎁 +${amount} (ESCUDO!)`,
+        vy: -2.0,
+        life: 90
+      });
+    } else if (amount > 0) {
+      floatingTexts.push({
+        x: this.x,
+        y: this.y - 30,
+        text: `+${amount} Força`,
+        vy: -1.0,
+        life: 60
+      });
     }
   }
 
