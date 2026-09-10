@@ -1,5 +1,5 @@
 // ---------- Config ----------
-const ROUND_SECONDS = 90;
+const ROUND_SECONDS = 300; // 5 minutos
 const CROSS_DISTANCE = 20; // Reduzido (antes era 40) para precisar cruzar mais de perto
 const SAW_THRESHOLD = 60;
 const CATCH_DISTANCE = 35;
