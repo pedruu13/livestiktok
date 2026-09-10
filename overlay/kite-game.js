@@ -20,8 +20,6 @@ const sfxCut = new Audio('https://www.soundjay.com/misc/sounds/whoosh-3.mp3');
 sfxCut.volume = 0.6;
 const sfxGift = new Audio('https://www.soundjay.com/misc/sounds/magic-chime-01.mp3');
 sfxGift.volume = 0.5;
-const sfxSpawn = new Audio('https://www.soundjay.com/misc/sounds/pop-1.mp3');
-sfxSpawn.volume = 0.3;
 
 function resize() {
   canvas.width = window.innerWidth;
