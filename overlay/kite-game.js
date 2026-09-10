@@ -48,7 +48,7 @@ class Kite {
     this.x = this.anchorX;
     this.prevX = this.x;
     // Adiciona variação aleatória na altura e nasce mais no meio da tela
-    this.y = (window.innerHeight * 0.6) + (Math.random() * 80 - 40); 
+    this.y = (window.innerHeight * 0.45) + (Math.random() * 80 - 40); 
     this.targetY = this.y;
     this.angle = 0; // inclinação visual (banking) conforme se move
     this.phase = Math.random() * Math.PI * 2;
