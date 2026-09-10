@@ -1,4 +1,6 @@
-const { EventEmitter } = require('events');
+const fs = require('fs');
+
+let js = `const { EventEmitter } = require('events');
 const { TikTokLiveConnection } = require('tiktok-live-connector');
 
 function startTiktokListener(username) {
@@ -12,7 +14,7 @@ function startTiktokListener(username) {
 
   const promise = tiktok.connect()
     .then((state) => {
-      console.log(`[tiktok] conectado à live de @${username} (roomId ${state.roomId})`);
+      console.log(\`[tiktok] conectado à live de @\${username} (roomId \${state.roomId})\`);
       return state;
     })
     .catch((err) => {
@@ -50,3 +52,7 @@ function startTiktokListener(username) {
 }
 
 module.exports = { startTiktokListener };
+`;
+
+fs.writeFileSync('src/tiktokListener.js', js);
+console.log("Adaptado para v2.4.4!");
