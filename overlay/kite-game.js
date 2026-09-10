@@ -599,10 +599,10 @@ makeDraggable(document.getElementById("gift-guide"));
 
 
 // RELÓGIO / TIMER DA LIVE
-let time = 90;
+let time = 300;
 setInterval(() => {
   time--;
-  if(time <= 0) time = 90; // Reseta a cada 1 min e meio
+  if(time <= 0) time = 300; // Reseta a cada 1 min e meio
   let m = Math.floor(time / 60);
   let s = time % 60;
   const tEl = document.getElementById('timer');

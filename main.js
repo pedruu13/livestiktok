@@ -40,6 +40,7 @@ app.whenReady().then(() => {
 });
 
 ipcMain.on('start-connection', async (event, username) => {
+  username = username.replace('@', '').trim(); // LIMPEZA AUTOMÁTICA DO ARROBA
   try {
     const { emitter: tiktokEvents, promise: connectionPromise } = startTiktokListener(username);
     
