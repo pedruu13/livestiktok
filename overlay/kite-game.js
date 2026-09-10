@@ -131,22 +131,28 @@ class Kite {
 
         const dist = Math.hypot(this.x - this.target.x, this.y - this.target.y);
         if (dist < CROSS_DISTANCE) {
-          const now = performance.now();
-          const myShield = now < this.shieldUntil || now < this.spawnInvulnerableUntil;
-          const targetShield = now < this.target.shieldUntil || now < this.target.spawnInvulnerableUntil;
+          const myGiftShield = now < this.shieldUntil;
+          const targetGiftShield = now < this.target.shieldUntil;
+          const mySpawnShield = now < this.spawnInvulnerableUntil;
+          const targetSpawnShield = now < this.target.spawnInvulnerableUntil;
 
-          if (myShield && targetShield) {
-            // Empate pacífico (ambas com escudo ou recém-nascidas), ninguém morre!
+          if (myGiftShield && targetGiftShield) {
+            // Empate de presentes (ambas com escudo pago)
             this.target = null;
             this.debicarDx *= -1; // rebate
-          } else if (myShield && !targetShield) {
-            // Atacante com presente ou recém-nascida corta alvo normal
+          } else if (myGiftShield && !targetGiftShield) {
+            // Escudo de presente corta QUALQUER UM
             cutKite(this, this.target);
-          } else if (targetShield && !myShield) {
-            // Alvo protegido corta atacante
+          } else if (targetGiftShield && !myGiftShield) {
             cutKite(this.target, this);
+          } else if (mySpawnShield || targetSpawnShield) {
+            // Se alguém é recém-nascido, a pipa vira "FANTASMA" e apenas REBATE.
+            // Ela não morre, mas também NÃO CORTA NINGUÉM. 
+            // Isso impede que um nível 1 mate um veterano VIP de graça.
+            this.target = null;
+            this.debicarDx *= -1; 
           } else {
-            // Combate Normal: Vantagem Exponencial para quem tem mais presentes
+            // Combate Normal Justo: Vantagem Exponencial para quem tem mais poder
             const myPowerSq = Math.pow(this.power + 10, 2);
             const targetPowerSq = Math.pow(this.target.power + 10, 2);
             const myChance = myPowerSq / (myPowerSq + targetPowerSq);
