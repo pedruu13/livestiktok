@@ -6,8 +6,7 @@ function startTiktokListener(username) {
   
   // Utilizando o motor v2.4.4 atualizado (TikTokLiveConnection)
   const tiktok = new TikTokLiveConnection(username, { 
-    processInitialData: false,
-    enableExtendedGiftInfo: true // Ajuda na compatibilidade de alguns gifts
+    processInitialData: false
   });
 
   const promise = tiktok.connect()
