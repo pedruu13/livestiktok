@@ -59,7 +59,10 @@ ipcMain.on('start-connection', (event, username) => {
         frame: false, // <-- Tira a barra superior e as bordas (PERFEITO PARA CAPTURA)
         resizable: false,
         autoHideMenuBar: true,
-        title: "Pipa Combate - Tela do Jogo (Ao Vivo)"
+        title: "Pipa Combate - Tela do Jogo (Ao Vivo)",
+        webPreferences: {
+          autoplayPolicy: 'no-user-gesture-required'
+        }
       });
       gameWindow.loadURL('http://localhost:3001');
       

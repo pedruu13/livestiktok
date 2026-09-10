@@ -14,6 +14,8 @@ const leaderboardEl = document.getElementById('leaderboard');
 const timerEl = document.getElementById('timer');
 
 // Efeitos Sonoros (SFX)
+const sfxSpawn = new Audio('https://www.soundjay.com/button/sounds/button-10.mp3');
+sfxSpawn.volume = 0.4;
 const sfxCut = new Audio('https://www.soundjay.com/misc/sounds/whoosh-3.mp3');
 sfxCut.volume = 0.6;
 const sfxGift = new Audio('https://www.soundjay.com/misc/sounds/magic-chime-01.mp3');
