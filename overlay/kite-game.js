@@ -494,7 +494,7 @@ function loop(t) {
 
   const now = performance.now();
   let activeKites = Array.from(kites.values()).filter(k => k.alive);
-  if (activeKites.length > 30) {
+  if (activeKites.length > 50) {
     activeKites.sort((a,b) => (a.power - b.power) || (a.lastActive - b.lastActive));
     const k = activeKites[0];
     k.alive = false;
