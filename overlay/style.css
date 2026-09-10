@@ -35,12 +35,12 @@ html, body {
 
 #title { font-size: 22px; font-weight: 900; }
 #timer { font-size: 40px; font-weight: 900; font-variant-numeric: tabular-nums; color: #ffd166; margin: -5px 0; }
-#subtitle { font-size: 13px; font-weight: 700; opacity: .95; }
+#subtitle { font-size: 15px; font-weight: 800; opacity: 1; -webkit-text-stroke: 0; text-shadow: 0 2px 4px rgba(0,0,0,1); margin-top: 5px; color: #fff; }
 
 /* Leaderboard Compacto e Deslocado */
 #leaderboard {
   position: absolute;
-  top: 100px;
+  top: 150px;
   left: 10px;
   z-index: 10;
   color: #fff;
