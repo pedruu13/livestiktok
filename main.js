@@ -1,0 +1,97 @@
+const { app, BrowserWindow, ipcMain } = require('electron');
+const path = require('path');
+const express = require('express');
+const { createWsRelay } = require('./src/wsServer');
+const { startTiktokListener } = require('./src/tiktokListener');
+
+let mainWindow;
+let gameWindow = null;
+let expressApp = express();
+let httpServer;
+let broadcastFunc = null;
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 450,
+    height: 520,
+    resizable: false,
+    autoHideMenuBar: true,
+    title: "Pipa Combate - Painel",
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false
+    }
+  });
+  mainWindow.loadFile('dashboard/index.html');
+}
+
+app.whenReady().then(() => {
+  // Inicia o Servidor Local Overlay (OBS)
+  expressApp.use(express.static(path.join(__dirname, 'overlay')));
+  
+  httpServer = expressApp.listen(3001, () => {
+    console.log('[App] Overlay rodando em http://localhost:3001');
+  });
+  
+  const wsRelay = createWsRelay(httpServer);
+  broadcastFunc = wsRelay.broadcast;
+
+  createWindow();
+});
+
+ipcMain.on('start-connection', (event, username) => {
+  try {
+    const tiktokEvents = startTiktokListener(username);
+    
+    tiktokEvents.on('chat', (data) => broadcastFunc && broadcastFunc({ type: 'chat', ...data }));
+    tiktokEvents.on('gift', (data) => broadcastFunc && broadcastFunc({ type: 'gift', ...data }));
+    
+    event.reply('connection-status', { 
+      success: true, 
+      msg: `Conectado na live de @${username}!` 
+    });
+
+    // Abre a janela do jogo automaticamente!
+    if (!gameWindow) {
+      gameWindow = new BrowserWindow({
+        width: 540,
+        height: 960,
+        frame: false, // <-- Tira a barra superior e as bordas (PERFEITO PARA CAPTURA)
+        resizable: false,
+        autoHideMenuBar: true,
+        title: "Pipa Combate - Tela do Jogo (Ao Vivo)"
+      });
+      gameWindow.loadURL('http://localhost:3001');
+      
+      gameWindow.on('closed', () => {
+        gameWindow = null;
+      });
+    }
+
+  } catch (err) {
+    event.reply('connection-status', { 
+      success: false, 
+      msg: `Erro: ${err.message}` 
+    });
+  }
+});
+
+ipcMain.on('change-volume', (event, volume) => {
+  if (broadcastFunc) {
+    broadcastFunc({ type: 'volume', value: volume });
+  }
+});
+
+ipcMain.on('test-event', (event, type) => {
+  if (!broadcastFunc) return;
+  const rand = Math.floor(Math.random() * 9999);
+  if (type === 'chat') {
+    broadcastFunc({ type: 'chat', userId: 'bot_'+rand, name: 'Espectador '+rand, avatarUrl: '' });
+  } else if (type === 'gift') {
+    broadcastFunc({ type: 'gift', userId: 'rico_'+rand, name: 'Apoiador VIP', value: 50, avatarUrl: '' });
+  }
+});
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
+});

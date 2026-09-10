@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Pipa Combate - Painel de Controle</title>
+  <style>
+    body { 
+      background: #0f172a; 
+      color: #fff; 
+      font-family: 'Segoe UI', Arial, sans-serif; 
+      padding: 20px; 
+      margin: 0;
+    }
+    .container {
+      max-width: 100%;
+    }
+    h2 {
+      text-align: center;
+      color: #00f2fe;
+      margin-top: 0;
+    }
+    .box {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #94a3b8;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      padding: 12px;
+      width: 100%;
+      box-sizing: border-box;
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: white;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+    button {
+      background: linear-gradient(90deg, #fe2c55, #f20042);
+      color: white;
+      border: none;
+      padding: 14px;
+      width: 100%;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(254, 44, 85, 0.4);
+    }
+    button:hover {
+      background: linear-gradient(90deg, #f20042, #d10036);
+    }
+    .status {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #94a3b8;
+      text-align: center;
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+    }
+    .info {
+      text-align: center;
+      color: #64748b;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>🪁 Pipa Combate LIVE</h2>
+    
+    <div class="box">
+      <label>Seu @ do TikTok:</label>
+      <input type="text" id="username" placeholder="ex: neymarjr">
+      <button id="connectBtn">Conectar na Live</button>
+      <div id="status" class="status">Desconectado.</div>
+    </div>
+
+    <div class="box">
+      <label>Volume dos Efeitos Sonoros:</label>
+      <input type="range" id="vol" min="0" max="100" value="50">
+    </div>
+
+    <div class="box">
+      <label>Testar Jogo (Off-Live):</label>
+      <div style="display: flex; gap: 10px;">
+        <button id="testChatBtn" style="background: #334155; border: 1px solid #475569;">💬 Comentário</button>
+        <button id="testGiftBtn" style="background: #334155; border: 1px solid #475569;">🎁 Presente</button>
+      </div>
+    </div>
+
+    <p class="info">URL do Navegador para o OBS:<br><b>http://localhost:3001</b></p>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    document.getElementById('connectBtn').addEventListener('click', () => {
+      const user = document.getElementById('username').value.trim();
+      if(!user) return alert('Por favor, digite seu usuário do TikTok!');
+      
+      const st = document.getElementById('status');
+      st.innerText = 'Buscando live...';
+      st.style.color = '#fff';
+      
+      ipcRenderer.send('start-connection', user);
+    });
+
+    document.getElementById('vol').addEventListener('input', (e) => {
+      ipcRenderer.send('change-volume', e.target.value / 100);
+    });
+
+    document.getElementById('testChatBtn').addEventListener('click', () => ipcRenderer.send('test-event', 'chat'));
+    document.getElementById('testGiftBtn').addEventListener('click', () => ipcRenderer.send('test-event', 'gift'));
+
+    ipcRenderer.on('connection-status', (e, data) => {
+      const st = document.getElementById('status');
+      st.innerText = data.msg;
+      st.style.color = data.success ? '#10b981' : '#ef4444'; // verde ou vermelho
+    });
+  </script>
+</body>
+</html>
