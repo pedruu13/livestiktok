@@ -350,6 +350,15 @@ function cutKite(winner, loser) {
   sfxCut.play().catch(()=>{});
   spawnCutParticles(loser.x, loser.y);
 
+  // NOVO: Avisa na tela quem cortou quem!
+  floatingTexts.push({
+    x: loser.x,
+    y: loser.y - 20, // Aparece um pouco acima de onde cortou
+    text: `✂️ ${winner.name} cortou ${loser.name}!`,
+    vy: -1.0, // sobe devagar
+    life: 120 // duração de +- 2 segundos na tela
+  });
+
   const fallen = { x: loser.x, y: loser.y, vy: 1.2, createdAt: performance.now(), caughtBy: null };
   fallenKites.push(fallen);
   winner.chasing = fallen;
@@ -490,6 +499,7 @@ function loop(t) {
   drawFallenKites();
   kites.forEach((k) => k.alive && k.draw(t));
   updateAndDrawParticles(dt);
+  updateAndDrawFloatingTexts(dt); // Habilita os textos subindo na tela
 
   renderTimer();
   requestAnimationFrame(loop);
