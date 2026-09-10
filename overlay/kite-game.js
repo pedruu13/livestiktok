@@ -360,6 +360,7 @@ function getOrCreateKite(userId, name, avatarUrl) {
 
 function cutKite(winner, loser) {
   loser.alive = false;
+  loser.deadAt = performance.now();
   winner.cuts += 1;
   winner.cutFlashUntil = performance.now() + 200;
   sfxCut.currentTime = 0;
@@ -500,11 +501,13 @@ function loop(t) {
   if (activeKites.length > 30) {
     activeKites.sort((a,b) => (a.power - b.power) || (a.lastActive - b.lastActive));
     activeKites[0].alive = false;
+    activeKites[0].deadAt = performance.now();
     spawnCutParticles(activeKites[0].x, activeKites[0].y);
   }
   activeKites.forEach(k => {
     if (now - k.lastActive > 60000 && k.power < 50) {
       k.alive = false;
+      k.deadAt = performance.now();
     }
   });
 
@@ -567,19 +570,44 @@ function connectWs() {
       const kite = getOrCreateKite(data.userId, data.name, data.avatarUrl);
       kite.addPower(1);
     }
+    if (data.type === 'join') {
+      if (!kites.has(data.userId)) {
+        const kite = getOrCreateKite(data.userId, data.name, data.avatarUrl);
+        kite.addPower(3);
+      }
+    }
   };
   ws.onclose = () => setTimeout(connectWs, 2000);
 }
 connectWs();
 
+setInterval(() => {
+  const now = performance.now();
+  kites.forEach((k, id) => {
+    if (!k.alive && now - (k.deadAt || 0) > 3000) kites.delete(id);
+  });
+}, 2000);
+
 const DEMO_MODE = new URLSearchParams(location.search).has('demo');
 if (DEMO_MODE) {
   const demoNames = ['Ana', 'Bruno', 'Caca', 'Duda', 'Enzo', 'Fefe'];
+  
+  // Simula Presentes e Comentários (pipas fortes)
   setInterval(() => {
     const name = demoNames[Math.floor(Math.random() * demoNames.length)];
     const kite = getOrCreateKite(name, name, `https://i.pravatar.cc/64?u=${name}`);
     kite.addPower(5 + Math.random() * 40);
   }, 600);
+
+  // Simula Entradas na Live (joins - pipas fracas)
+  let joinId = 0;
+  setInterval(() => {
+    const name = "Joiner_" + (++joinId);
+    if (!kites.has(name)) {
+      const kite = getOrCreateKite(name, name, `https://i.pravatar.cc/64?u=${name}`);
+      kite.addPower(3);
+    }
+  }, 1000);
 }
 
 // ====== SISTEMA DE ARRASTAR E SOLTAR (DRAG & DROP) ======

@@ -54,12 +54,19 @@ function startTiktokListener(username) {
     });
   });
 
-  tiktok.on('disconnected', () => {
-    console.warn('[tiktok] desconectado. Tentando reconectar em 5s...');
-    setTimeout(() => tiktok.connect().catch(() => {}), 5000);
+  tiktok.on('member', (data) => {
+    const userId = data.user?.uniqueId || data.uniqueId || 'usuario';
+    const name = data.user?.nickname || data.nickname || userId;
+    const avatarUrl = data.user?.avatarThumb?.urlList?.[0] || data.profilePictureUrl || '';
+
+    emitter.emit('join', { userId, name, avatarUrl });
   });
 
-  return { emitter, promise };
+  tiktok.on('disconnected', () => {
+    console.warn('[tiktok] desconectado.');
+  });
+
+  return { emitter, promise, disconnect: () => tiktok.disconnect() };
 }
 
 module.exports = { startTiktokListener };

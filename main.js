@@ -39,15 +39,25 @@ app.whenReady().then(() => {
   createWindow();
 });
 
+let currentTiktokConnection = null;
+
 ipcMain.on('start-connection', async (event, username) => {
   username = username.replace('@', '').trim(); // LIMPEZA AUTOMÁTICA DO ARROBA
   try {
-    const { emitter: tiktokEvents, promise: connectionPromise } = startTiktokListener(username);
+    if (currentTiktokConnection) {
+      currentTiktokConnection.disconnect();
+      currentTiktokConnection = null;
+    }
+
+    const connection = startTiktokListener(username);
+    currentTiktokConnection = connection;
+    const { emitter: tiktokEvents, promise: connectionPromise } = connection;
     
     await connectionPromise; // TRAVA DE SEGURANÇA: ESPERA CONECTAR DE VERDADE
     
     tiktokEvents.on('chat', (data) => broadcastFunc && broadcastFunc({ type: 'chat', ...data }));
     tiktokEvents.on('gift', (data) => broadcastFunc && broadcastFunc({ type: 'gift', ...data }));
+    tiktokEvents.on('join', (data) => broadcastFunc && broadcastFunc({ type: 'join', ...data }));
     
     event.reply('connection-status', { 
       success: true, 
