@@ -553,11 +553,28 @@ if (DEMO_MODE) {
 // ====== SISTEMA DE ARRASTAR E SOLTAR (DRAG & DROP) ======
 function makeDraggable(elmnt) {
   let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  let currentScale = 1;
   
   // Muda o cursor do mouse para a cruzinha de arrastar
   elmnt.style.cursor = 'move';
   // Permite que o elemento receba cliques
   elmnt.style.pointerEvents = 'auto';
+  
+  // Função para aumentar/diminuir com a rodinha do mouse
+  elmnt.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      currentScale += 0.1; // Para cima aumenta
+    } else {
+      currentScale -= 0.1; // Para baixo diminui
+    }
+    
+    // Limites de tamanho (30% ao menor, 300% ao maior)
+    if (currentScale < 0.3) currentScale = 0.3;
+    if (currentScale > 3.0) currentScale = 3.0;
+    
+    elmnt.style.transform = `scale(${currentScale})`;
+  });
   
   elmnt.onmousedown = function(e) {
     e.preventDefault();
@@ -578,14 +595,16 @@ function makeDraggable(elmnt) {
       pos3 = e.clientX;
       pos4 = e.clientY;
       
-      // Quebra as travas do CSS (transform, right, bottom) para mover livremente
-      elmnt.style.transform = 'none';
+      // Quebra as travas do CSS originais
       elmnt.style.bottom = 'auto';
       elmnt.style.right = 'auto';
       
       // Define o Top e Left acompanhando o mouse
       elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
       elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+      
+      // Mantém a escala atual mesmo arrastando
+      elmnt.style.transform = `scale(${currentScale})`;
     };
   };
 }
