@@ -47,13 +47,15 @@ class Kite {
     this.anchorX = 60 + Math.random() * (window.innerWidth - 120);
     this.x = this.anchorX;
     this.prevX = this.x;
-    this.y = window.innerHeight - 100; // Nasce um pouco mais alta (antes era -20)
+    // Adiciona variação aleatória de 50px na altura para não baterem instantaneamente
+    this.y = window.innerHeight - 100 + (Math.random() * 50 - 25); 
     this.targetY = this.y;
     this.angle = 0; // inclinação visual (banking) conforme se move
     this.phase = Math.random() * Math.PI * 2;
     this.lastActive = performance.now();
     this.cutFlashUntil = 0;
-    this.shieldUntil = 0; // Tempo de invencibilidade ganho por presentes
+    this.shieldUntil = 0; // Escudo comprado com presentes
+    this.spawnInvulnerableUntil = performance.now() + 5000; // 5 SEGUNDOS DE IMUNIDADE AO NASCER
     this.bodyColor = BODY_COLORS[Math.floor(Math.random() * BODY_COLORS.length)];
 
     this.target = null;
@@ -113,17 +115,21 @@ class Kite {
         const dist = Math.hypot(this.x - this.target.x, this.y - this.target.y);
         if (dist < CROSS_DISTANCE) {
           const now = performance.now();
-          const myShield = now < this.shieldUntil;
-          const targetShield = now < this.target.shieldUntil;
+          const myShield = now < this.shieldUntil || now < this.spawnInvulnerableUntil;
+          const targetShield = now < this.target.shieldUntil || now < this.target.spawnInvulnerableUntil;
 
-          if (myShield && !targetShield) {
-            // Atacante com presente ativo -> CORTA NA HORA (INVENCÍVEL)
+          if (myShield && targetShield) {
+            // Empate pacífico (ambas com escudo ou recém-nascidas), ninguém morre!
+            this.target = null;
+            this.debicarDx *= -1; // rebate
+          } else if (myShield && !targetShield) {
+            // Atacante com presente ou recém-nascida corta alvo normal
             cutKite(this, this.target);
           } else if (targetShield && !myShield) {
-            // Alvo com presente ativo -> DEFENDE E CORTA O ATACANTE NA HORA
+            // Alvo protegido corta atacante
             cutKite(this.target, this);
           } else {
-            // Vantagem Exponencial para quem tem mais presentes
+            // Combate Normal: Vantagem Exponencial para quem tem mais presentes
             const myPowerSq = Math.pow(this.power + 10, 2);
             const targetPowerSq = Math.pow(this.target.power + 10, 2);
             const myChance = myPowerSq / (myPowerSq + targetPowerSq);
