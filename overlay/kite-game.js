@@ -479,18 +479,7 @@ function renderLeaderboard() {
     .join('');
 }
 
-function renderTimer() {
-  const remaining = Math.max(0, Math.round((roundEndsAt - Date.now()) / 1000));
-  const m = String(Math.floor(remaining / 60)).padStart(2, '0');
-  const s = String(remaining % 60).padStart(2, '0');
-  document.getElementById('timer').textContent = `${m}:${s}`;
-
-  if (remaining === 0) {
-    roundEndsAt = Date.now() + ROUND_SECONDS * 1000;
-    kites.clear();
-    fallenKites = [];
-  }
-}
+// Função renderTimer removida para o modo de live infinita (24h)
 
 function loop(t) {
   const dt = Math.min(3, (t - lastT) / 16.67);
@@ -520,7 +509,6 @@ function loop(t) {
   updateAndDrawParticles(dt);
   updateAndDrawFloatingTexts(dt); // Habilita os textos subindo na tela
 
-  renderTimer();
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);
@@ -675,13 +663,20 @@ makeDraggable(document.getElementById("leaderboard"));
 makeDraggable(document.getElementById("gift-guide"));
 
 
-// RELÓGIO / TIMER DA LIVE
-let time = 300;
+// RELÓGIO DE TEMPO DE LIVE (UPTIME PARA 24H)
+let startTime = Date.now();
 setInterval(() => {
-  time--;
-  if(time <= 0) time = 300; // Reseta a cada 1 min e meio
-  let m = Math.floor(time / 60);
-  let s = time % 60;
+  let diff = Math.floor((Date.now() - startTime) / 1000);
+  let h = Math.floor(diff / 3600);
+  let m = Math.floor((diff % 3600) / 60);
+  let s = diff % 60;
+  
+  let formatted = '';
+  if (h > 0) {
+    formatted += String(h).padStart(2, '0') + ':';
+  }
+  formatted += String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  
   const tEl = document.getElementById('timer');
-  if(tEl) tEl.innerText = `0${m}:${s < 10 ? '0' : ''}${s}`;
+  if(tEl) tEl.innerText = formatted;
 }, 1000);
