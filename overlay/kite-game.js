@@ -72,6 +72,7 @@ class Kite {
   }
 
   addPower(amount) {
+    this.lastActive = performance.now(); // PREVINE QUE A PIPA SUMA SE ELE ESTIVER ATIVO
     this.power += amount;
     this.targetY = Math.max(
       100, // Margem do topo para não ficar por trás do placar
@@ -489,14 +490,18 @@ function loop(t) {
   let activeKites = Array.from(kites.values()).filter(k => k.alive);
   if (activeKites.length > 30) {
     activeKites.sort((a,b) => (a.power - b.power) || (a.lastActive - b.lastActive));
-    activeKites[0].alive = false;
-    activeKites[0].deadAt = performance.now();
-    spawnCutParticles(activeKites[0].x, activeKites[0].y);
+    const k = activeKites[0];
+    k.alive = false;
+    k.deadAt = performance.now();
+    spawnCutParticles(k.x, k.y);
+    fallenKites.push({ x: k.x, y: k.y, vy: 1.2, createdAt: performance.now(), caughtBy: null });
   }
   activeKites.forEach(k => {
     if (now - k.lastActive > 60000 && k.power < 50) {
       k.alive = false;
       k.deadAt = performance.now();
+      spawnCutParticles(k.x, k.y);
+      fallenKites.push({ x: k.x, y: k.y, vy: 1.2, createdAt: performance.now(), caughtBy: null });
     }
   });
 
