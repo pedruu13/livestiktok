@@ -14,11 +14,11 @@ const leaderboardEl = document.getElementById('leaderboard');
 const timerEl = document.getElementById('timer');
 
 // Efeitos Sonoros (SFX)
-const sfxSpawn = new Audio('https://www.soundjay.com/button/sounds/button-10.mp3');
+const sfxSpawn = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
 sfxSpawn.volume = 0.4;
-const sfxCut = new Audio('https://www.soundjay.com/misc/sounds/whoosh-3.mp3');
+const sfxCut = new Audio('https://actions.google.com/sounds/v1/cartoon/whip_swipe.ogg');
 sfxCut.volume = 0.6;
-const sfxGift = new Audio('https://www.soundjay.com/misc/sounds/magic-chime-01.mp3');
+const sfxGift = new Audio('https://actions.google.com/sounds/v1/cartoon/magic_chime.ogg');
 sfxGift.volume = 0.5;
 
 function resize() {
@@ -47,8 +47,8 @@ class Kite {
     this.anchorX = 60 + Math.random() * (window.innerWidth - 120);
     this.x = this.anchorX;
     this.prevX = this.x;
-    // Adiciona variação aleatória de 50px na altura para não baterem instantaneamente
-    this.y = window.innerHeight - 100 + (Math.random() * 50 - 25); 
+    // Adiciona variação aleatória na altura e nasce mais no meio da tela
+    this.y = (window.innerHeight * 0.6) + (Math.random() * 80 - 40); 
     this.targetY = this.y;
     this.angle = 0; // inclinação visual (banking) conforme se move
     this.phase = Math.random() * Math.PI * 2;
