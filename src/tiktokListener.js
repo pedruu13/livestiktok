@@ -62,11 +62,27 @@ function startTiktokListener(username) {
     emitter.emit('join', { userId, name, avatarUrl });
   });
 
+  let intentionalDisconnect = false;
+
   tiktok.on('disconnected', () => {
-    console.warn('[tiktok] desconectado.');
+    if (intentionalDisconnect) {
+      console.warn('[tiktok] desconectado intencionalmente.');
+      return;
+    }
+    console.warn('[tiktok] A conexão caiu! Tentando reconectar automaticamente em 5s...');
+    setTimeout(() => {
+      tiktok.connect().catch(err => console.error('[tiktok] falha na reconexão automática', err));
+    }, 5000);
   });
 
-  return { emitter, promise, disconnect: () => tiktok.disconnect() };
+  return { 
+    emitter, 
+    promise, 
+    disconnect: () => {
+      intentionalDisconnect = true;
+      tiktok.disconnect();
+    } 
+  };
 }
 
 module.exports = { startTiktokListener };
