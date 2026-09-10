@@ -94,6 +94,25 @@
       <input type="range" id="vol" min="0" max="100" value="50">
     </div>
 
+    
+    <div class="box">
+      <label>⚙️ Posição na Tela do Jogo:</label>
+      <div style="display: flex; gap: 10px; margin-bottom: 5px;">
+        <select id="pos-leaderboard" style="padding: 8px; width: 50%; background: #0f172a; color: white; border: 1px solid #475569; border-radius: 8px;">
+          <option value="top-left">Placar: Topo Esq</option>
+          <option value="top-right">Placar: Topo Dir</option>
+          <option value="bottom-left">Placar: Baixo Esq</option>
+          <option value="bottom-right">Placar: Baixo Dir</option>
+          <option value="hidden">Placar: Oculto</option>
+        </select>
+        <select id="pos-gifts" style="padding: 8px; width: 50%; background: #0f172a; color: white; border: 1px solid #475569; border-radius: 8px;">
+          <option value="bottom-center">Guia: Baixo</option>
+          <option value="top-center">Guia: Topo</option>
+          <option value="hidden">Guia: Oculto</option>
+        </select>
+      </div>
+    </div>
+  
     <div class="box">
       <label>Testar Jogo (Off-Live):</label>
       <div style="display: flex; gap: 10px;">
@@ -125,6 +144,14 @@
 
     document.getElementById('testChatBtn').addEventListener('click', () => ipcRenderer.send('test-event', 'chat'));
     document.getElementById('testGiftBtn').addEventListener('click', () => ipcRenderer.send('test-event', 'gift'));
+
+    document.getElementById('pos-leaderboard').addEventListener('change', (e) => {
+      ipcRenderer.send('overlay-config', { target: 'leaderboard', value: e.target.value });
+    });
+    document.getElementById('pos-gifts').addEventListener('change', (e) => {
+      ipcRenderer.send('overlay-config', { target: 'gifts', value: e.target.value });
+    });
+  
 
     ipcRenderer.on('connection-status', (e, data) => {
       const st = document.getElementById('status');

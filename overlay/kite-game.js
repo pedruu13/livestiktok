@@ -504,6 +504,31 @@ function connectWs() {
       sfxCut.volume = data.value;
       sfxGift.volume = data.value * 0.8;
     }
+    
+    if (data.type === 'config') {
+      if (data.target === 'leaderboard') {
+        const lb = document.getElementById('leaderboard');
+        lb.style.display = data.value === 'hidden' ? 'none' : 'block';
+        if (data.value !== 'hidden') {
+          lb.style.transform = 'none';
+          lb.style.top = data.value.includes('top') ? '150px' : 'auto';
+          lb.style.bottom = data.value.includes('bottom') ? '15px' : 'auto';
+          lb.style.left = data.value.includes('left') ? '10px' : 'auto';
+          lb.style.right = data.value.includes('right') ? '10px' : 'auto';
+        }
+      }
+      if (data.target === 'gifts') {
+        const gg = document.getElementById('gift-guide');
+        gg.style.display = data.value === 'hidden' ? 'none' : 'block';
+        if (data.value !== 'hidden') {
+          gg.style.transform = 'translateX(-50%)';
+          gg.style.left = '50%';
+          gg.style.bottom = data.value === 'bottom-center' ? '15px' : 'auto';
+          gg.style.top = data.value === 'top-center' ? '150px' : 'auto';
+        }
+      }
+    }
+  
     if (data.type === 'gift') {
       const kite = getOrCreateKite(data.userId, data.name, data.avatarUrl);
       kite.addPower(data.value);

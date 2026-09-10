@@ -13,7 +13,7 @@ let broadcastFunc = null;
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 450,
-    height: 520,
+    height: 620,
     resizable: false,
     autoHideMenuBar: true,
     title: "Pipa Combate - Painel",
@@ -79,6 +79,11 @@ ipcMain.on('start-connection', (event, username) => {
   }
 });
 
+
+ipcMain.on('overlay-config', (event, data) => {
+  if (broadcastFunc) broadcastFunc({ type: 'config', ...data });
+});
+  
 ipcMain.on('change-volume', (event, volume) => {
   if (broadcastFunc) {
     broadcastFunc({ type: 'volume', value: volume });
