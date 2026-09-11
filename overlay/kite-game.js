@@ -57,6 +57,11 @@ class Kite {
     this.shieldUntil = 0; // Escudo comprado com presentes
     this.spawnInvulnerableUntil = performance.now() + 5000; // 5 SEGUNDOS DE IMUNIDADE AO NASCER
     this.bodyColor = BODY_COLORS[Math.floor(Math.random() * BODY_COLORS.length)];
+    
+    // NOVO: Design Pipa Combate (Modelos, Estampas e Cores)
+    this.model = Math.floor(Math.random() * 4); // 0=Raia, 1=Pipa Clássica/Lápis, 2=Peixinho, 3=Batata/GT
+    this.pattern = Math.floor(Math.random() * 4); // 0=Lisa, 1=Meio-a-Meio, 2=Faixa, 3=Cruz
+    this.patternColor = `hsl(${Math.random() * 360}, 80%, 50%)`; // Cor do papel secundário
 
     this.target = null;
     this.sawProgress = 0;
@@ -196,7 +201,7 @@ class Kite {
     // rabiola ondulando, seguindo o rastro da pipa (desenha antes do corpo)
     if (this.trail.length > 2) {
       ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 1.5; // Linha da rabiola mais fina
       ctx.beginPath();
       ctx.moveTo(this.trail[0].x, this.trail[0].y);
       for (let i = 1; i < this.trail.length; i++) {
@@ -205,13 +210,25 @@ class Kite {
         ctx.quadraticCurveTo(prev.x, prev.y, (p.x + prev.x) / 2, (p.y + prev.y) / 2);
       }
       ctx.stroke();
-      // laçinhos coloridos ao longo da rabiola
+      
+      // NOVO: Fitinhas da rabiola (tiras de plástico transversais)
       for (let i = 2; i < this.trail.length; i += 4) {
         const p = this.trail[i];
-        ctx.fillStyle = i % 8 === 2 ? '#d85a30' : '#f0997b';
+        const prev = this.trail[i - 1];
+        // Calcula a normal para desenhar as fitas cruzando a linha
+        const dx = p.x - prev.x;
+        const dy = p.y - prev.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = (-dy / len) * 10; // comprimento da fita (metade)
+        const ny = (dx / len) * 10;
+
+        // Cores alternadas das fitinhas (Preto/Branco ou Colorido)
+        ctx.strokeStyle = i % 8 === 2 ? '#111' : this.patternColor;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.moveTo(p.x - nx, p.y - ny);
+        ctx.lineTo(p.x + nx, p.y + ny);
+        ctx.stroke();
       }
     }
 
@@ -238,33 +255,92 @@ class Kite {
 
     const skin = getKiteSkin(this.power, this.bodyColor);
 
-    // corpo da pipa (estilo Raia/Flecha de Pipa Combate com Skins)
-    const grad = ctx.createLinearGradient(0, -size, 0, size);
-    grad.addColorStop(0, skin.tip); // ponta clara/neon
-    grad.addColorStop(1, skin.base); // base da skin
+      // corpo da pipa (Diferentes modelos e recortes)
+      const grad = ctx.createLinearGradient(0, -size, 0, size);
+      grad.addColorStop(0, skin.tip); // ponta clara/neon
+      grad.addColorStop(1, skin.base); // base da skin
 
-    ctx.beginPath();
-    ctx.moveTo(0, -size * 1.2); // bico mais longo
-    ctx.lineTo(size * 0.8, -size * 0.2); // lateral
-    ctx.lineTo(0, size); // base (rabiola)
-    ctx.lineTo(-size * 0.8, -size * 0.2); // lateral
-    ctx.closePath();
-    
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = skin.outline;
-    ctx.stroke();
+      ctx.beginPath();
+      if (this.model === 1) { 
+        // Pipa Clássica / Lápis (bico reto, corpo em losango)
+        ctx.moveTo(0, -size * 1.2);
+        ctx.lineTo(size * 0.7, -size * 0.4);
+        ctx.lineTo(0, size);
+        ctx.lineTo(-size * 0.7, -size * 0.4);
+      } else if (this.model === 2) { 
+        // Peixinho (mais fina em cima, gordinha embaixo)
+        ctx.moveTo(0, -size * 1.0);
+        ctx.lineTo(size * 0.6, -size * 0.1);
+        ctx.lineTo(0, size * 1.2);
+        ctx.lineTo(-size * 0.6, -size * 0.1);
+      } else if (this.model === 3) { 
+        // Batata / GT (muito larga e curta)
+        ctx.moveTo(0, -size * 0.9);
+        ctx.lineTo(size * 1.1, -size * 0.2);
+        ctx.lineTo(0, size * 0.8);
+        ctx.lineTo(-size * 1.1, -size * 0.2);
+      } else { 
+        // Raia / Flecha (padrão)
+        ctx.moveTo(0, -size * 1.2);
+        ctx.lineTo(size * 0.8, -size * 0.2);
+        ctx.lineTo(0, size);
+        ctx.lineTo(-size * 0.8, -size * 0.2);
+      }
+      ctx.closePath();
+      
+      // Preenche a cor de fundo (base)
+      ctx.fillStyle = grad;
+      ctx.fill();
 
-    // hastes internas (vareta envergada e central mudando de cor)
-    ctx.strokeStyle = skin.sticks;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(0, -size * 1.2); ctx.lineTo(0, size); // vareta central
-    // vareta envergada (curva)
-    ctx.moveTo(-size * 0.8, -size * 0.2);
-    ctx.quadraticCurveTo(0, -size * 0.6, size * 0.8, -size * 0.2);
-    ctx.stroke();
+      // ESTAMPAS / RECORTES DE PAPEL
+      if (this.pattern > 0) {
+        ctx.save();
+        ctx.clip(); // Corta para não pintar fora do formato da pipa
+        ctx.fillStyle = this.patternColor;
+        ctx.beginPath();
+        if (this.pattern === 1) { // Metade/Metade
+          ctx.moveTo(0, -size*2); ctx.lineTo(size*2, -size*2); ctx.lineTo(size*2, size*2); ctx.lineTo(0, size*2);
+        } else if (this.pattern === 2) { // Faixa horizontal no meio
+          ctx.rect(-size*2, -size*0.2, size*4, size*0.4);
+        } else if (this.pattern === 3) { // Cruz (Xadrez simples)
+          ctx.rect(-size*2, -size*0.2, size*4, size*0.4);
+          ctx.rect(-size*0.2, -size*2, size*0.4, size*4);
+        }
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = skin.outline;
+      ctx.stroke();
+
+      // hastes internas (varetas)
+      ctx.strokeStyle = skin.sticks;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      // Vareta central
+      ctx.moveTo(0, -size * 1.2); 
+      ctx.lineTo(0, size * (this.model === 2 ? 1.2 : 1.0)); // Desce mais no peixinho
+      
+      // Vareta envergada (horizontal)
+      if (this.model === 1) {
+        // Pipa clássica tem vareta reta ou leve curva
+        ctx.moveTo(-size * 0.7, -size * 0.4);
+        ctx.lineTo(size * 0.7, -size * 0.4);
+      } else if (this.model === 2) {
+        // Peixinho curva um pouco mais abaixo
+        ctx.moveTo(-size * 0.6, -size * 0.1);
+        ctx.quadraticCurveTo(0, -size * 0.5, size * 0.6, -size * 0.1);
+      } else if (this.model === 3) {
+        // GT é muito larga, curva suave
+        ctx.moveTo(-size * 1.1, -size * 0.2);
+        ctx.quadraticCurveTo(0, -size * 0.6, size * 1.1, -size * 0.2);
+      } else {
+        // Raia normal
+        ctx.moveTo(-size * 0.8, -size * 0.2);
+        ctx.quadraticCurveTo(0, -size * 0.6, size * 0.8, -size * 0.2);
+      }
+      ctx.stroke();ctx.stroke();
 
     // RABIOLA (Cauda animada que balança com o vento)
     ctx.beginPath();
