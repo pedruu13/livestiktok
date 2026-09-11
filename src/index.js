@@ -25,7 +25,8 @@ if (!TIKTOK_USERNAME || TIKTOK_USERNAME === 'seu_usuario_da_tiktok') {
   console.warn('================================================================\n');
 } else {
   console.log(`[tiktok] tentando conectar com a conta @${TIKTOK_USERNAME}...`);
-  const tiktokEvents = startTiktokListener(TIKTOK_USERNAME);
+  const { emitter: tiktokEvents } = startTiktokListener(TIKTOK_USERNAME);
   tiktokEvents.on('chat', (data) => broadcast({ type: 'chat', ...data }));
   tiktokEvents.on('gift', (data) => broadcast({ type: 'gift', ...data }));
+  tiktokEvents.on('join', (data) => broadcast({ type: 'join', ...data }));
 }

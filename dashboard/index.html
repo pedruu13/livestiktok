@@ -125,8 +125,6 @@
   </div>
 
   <script>
-    const { ipcRenderer } = require('electron');
-
     document.getElementById('connectBtn').addEventListener('click', () => {
       const user = document.getElementById('username').value.trim();
       if(!user) return alert('Por favor, digite seu usuário do TikTok!');
@@ -135,25 +133,25 @@
       st.innerText = 'Buscando live...';
       st.style.color = '#fff';
       
-      ipcRenderer.send('start-connection', user);
+      window.tiktokKite.startConnection(user);
     });
 
     document.getElementById('vol').addEventListener('input', (e) => {
-      ipcRenderer.send('change-volume', e.target.value / 100);
+      window.tiktokKite.changeVolume(e.target.value / 100);
     });
 
-    document.getElementById('testChatBtn').addEventListener('click', () => ipcRenderer.send('test-event', 'chat'));
-    document.getElementById('testGiftBtn').addEventListener('click', () => ipcRenderer.send('test-event', 'gift'));
+    document.getElementById('testChatBtn').addEventListener('click', () => window.tiktokKite.sendTestEvent('chat'));
+    document.getElementById('testGiftBtn').addEventListener('click', () => window.tiktokKite.sendTestEvent('gift'));
 
     document.getElementById('pos-leaderboard').addEventListener('change', (e) => {
-      ipcRenderer.send('overlay-config', { target: 'leaderboard', value: e.target.value });
+      window.tiktokKite.sendOverlayConfig({ target: 'leaderboard', value: e.target.value });
     });
     document.getElementById('pos-gifts').addEventListener('change', (e) => {
-      ipcRenderer.send('overlay-config', { target: 'gifts', value: e.target.value });
+      window.tiktokKite.sendOverlayConfig({ target: 'gifts', value: e.target.value });
     });
   
 
-    ipcRenderer.on('connection-status', (e, data) => {
+    window.tiktokKite.onConnectionStatus((data) => {
       const st = document.getElementById('status');
       st.innerText = data.msg;
       st.style.color = data.success ? '#10b981' : '#ef4444'; // verde ou vermelho

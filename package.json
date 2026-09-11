@@ -14,6 +14,9 @@
     "tiktok-live-connector": "^2.4.4",
     "ws": "^8.17.0"
   },
+  "overrides": {
+    "qs": "^6.16.0"
+  },
   "devDependencies": {
     "electron": "^44.3.0"
   }

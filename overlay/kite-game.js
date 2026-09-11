@@ -12,6 +12,7 @@ const DAMAGE_MAX = 30;
 const COMBAT_COOLDOWN_MS = 1500;
 const SPAWN_SHIELD_MS = 3000;
 const GIFT_SHIELD_MS = 6000;
+const KITE_MARGIN = 70;
 
 // ========== CANVAS ==========
 const canvas = document.getElementById('game');
@@ -24,6 +25,42 @@ function resize() {
 window.addEventListener('resize', resize);
 resize();
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function randomBetween(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function getSkyTop() {
+  return Math.max(115, window.innerHeight * 0.12);
+}
+
+function getSkyBottom() {
+  return Math.max(getSkyTop() + 140, window.innerHeight * 0.72);
+}
+
+function randomSkyY(power) {
+  const top = getSkyTop();
+  const bottom = getSkyBottom();
+  const lift = clamp((power || 0) / 300, 0, 0.45);
+  return randomBetween(top, bottom - (bottom - top) * lift);
+}
+
+function getHorizontalBounds() {
+  const margin = Math.min(KITE_MARGIN, Math.max(20, window.innerWidth * 0.18));
+  return {
+    min: margin,
+    max: Math.max(margin, window.innerWidth - margin)
+  };
+}
+
+function randomSkyX() {
+  const bounds = getHorizontalBounds();
+  return randomBetween(bounds.min, bounds.max);
+}
+
 // ========== SFX ==========
 const sfxSpawn = new Audio('https://actions.google.com/sounds/v1/cartoon/pop.ogg');
 sfxSpawn.volume = 0.4;
@@ -34,6 +71,7 @@ sfxGift.volume = 0.5;
 
 // ========== ESTADO DA BATALHA ==========
 const kites = new Map();
+const queuePreviewKites = new Map();
 let fallenKites = [];
 let floatingTexts = [];
 let particles = [];
@@ -67,13 +105,18 @@ class Kite {
     this.trophies = 0;
     this.alive = true;
     this.deadAt = 0;
-    this.anchorX = 60 + Math.random() * (window.innerWidth - 120);
-    this.x = this.anchorX;
+    this.anchorX = randomSkyX();
+    const bounds = getHorizontalBounds();
+    this.x = clamp(this.anchorX + randomBetween(-45, 45), bounds.min, bounds.max);
     this.prevX = this.x;
-    this.y = (window.innerHeight * 0.45) + (Math.random() * 80 - 40);
-    this.targetY = this.y;
+    this.y = randomBetween(window.innerHeight * 0.62, window.innerHeight * 0.78);
+    this.targetX = this.x;
+    this.targetY = randomSkyY(this.power);
     this.angle = 0;
     this.phase = Math.random() * Math.PI * 2;
+    this.windPhase = Math.random() * Math.PI * 2;
+    this.nextWanderAt = 0;
+    this.flightSpeed = randomBetween(0.88, 1.2);
     this.lastActive = performance.now();
     this.cutFlashUntil = 0;
     this.combatCooldownUntil = 0;
@@ -91,6 +134,17 @@ class Kite {
     this.img = new Image();
     this.img.crossOrigin = 'anonymous';
     this.img.src = avatarUrl || '';
+  }
+
+  chooseWanderTarget(t) {
+    const bounds = getHorizontalBounds();
+    this.targetX = clamp(
+      this.anchorX + Math.sin(t / 850 + this.phase) * randomBetween(90, 210),
+      bounds.min,
+      bounds.max
+    );
+    this.targetY = randomSkyY(this.power) + Math.sin(t / 700 + this.windPhase) * 45;
+    this.nextWanderAt = t + randomBetween(900, 1800);
   }
 
   healHp(amount) {
@@ -139,11 +193,10 @@ class Kite {
     }
 
     // Movimento vertical suave
-    this.y += (this.targetY - this.y) * (1 - Math.pow(0.92, dt));
-
     if (this.chasing && fallenKites.includes(this.chasing)) {
       // Persegue a rabiola caída
-      this.x += (this.chasing.x - this.x) * (1 - Math.pow(0.90, dt));
+      this.targetX = this.chasing.x;
+      this.targetY = this.chasing.y - 25;
     } else {
       this.chasing = null;
 
@@ -156,7 +209,9 @@ class Kite {
           this.debicarUntil = t + 2500 + Math.random() * 2000;
           this.debicarDx = Math.sign(this.target.x - this.x) * (30 + Math.random() * 40);
         }
-        this.x += ((this.target.x + this.debicarDx) - this.x) * (1 - Math.pow(0.96, dt));
+        const swoop = Math.sin((this.debicarUntil - t) / 180) * 35;
+        this.targetX = this.target.x + this.debicarDx;
+        this.targetY = this.target.y + swoop;
 
         const dist = Math.hypot(this.x - this.target.x, this.y - this.target.y);
         if (dist < CROSS_DISTANCE) {
@@ -194,10 +249,18 @@ class Kite {
         }
       } else {
         // Sem alvo, voa livre
-        const wanderX = this.anchorX + Math.sin(t / 900 + this.phase) * 150;
-        this.x += (wanderX - this.x) * (1 - Math.pow(0.96, dt));
+        if (t > this.nextWanderAt) this.chooseWanderTarget(t);
       }
     }
+
+    const windX = Math.sin(t / 420 + this.windPhase) * 22;
+    const windY = Math.cos(t / 520 + this.phase) * 18;
+    const bounds = getHorizontalBounds();
+    const desiredX = clamp(this.targetX + windX, bounds.min, bounds.max);
+    const desiredY = clamp(this.targetY + windY, getSkyTop(), getSkyBottom());
+
+    this.x += (desiredX - this.x) * (1 - Math.pow(0.94, dt * this.flightSpeed));
+    this.y += (desiredY - this.y) * (1 - Math.pow(0.93, dt * this.flightSpeed));
 
     // Banking (inclinação visual)
     const vx = this.x - this.prevX;
@@ -627,12 +690,19 @@ function addToQueue(userId, name, avatarUrl, bonusPower) {
   const existing = nextBattleQueue.find(p => p.userId === userId);
   if (existing) {
     existing.bonusPower += bonusPower;
+    const kite = kites.get(userId);
+    if (kite) kite.addPower(bonusPower);
+    const previewKite = queuePreviewKites.get(userId);
+    if (previewKite && bonusPower > 0) previewKite.addPower(bonusPower);
     return;
   }
 
   nextBattleQueue.push({ userId, name, avatarUrl, bonusPower });
-  sfxSpawn.currentTime = 0;
-  sfxSpawn.play().catch(() => {});
+  if (battleState === 'waiting') {
+    spawnActiveKite(userId, name, avatarUrl, bonusPower);
+  } else {
+    ensureQueuePreview(userId, name, avatarUrl, bonusPower);
+  }
 
   // Transições automáticas
   if (battleState === 'fake' && nextBattleQueue.length >= MIN_PLAYERS) {
@@ -642,6 +712,62 @@ function addToQueue(userId, name, avatarUrl, bonusPower) {
   } else if (battleState === 'waiting' && nextBattleQueue.length >= MIN_PLAYERS) {
     battleState = 'countdown';
     countdownStart = performance.now();
+  }
+}
+
+function spawnActiveKite(userId, name, avatarUrl, bonusPower) {
+  const kite = new Kite(userId, name, avatarUrl, bonusPower || 0);
+  kites.set(userId, kite);
+  sfxSpawn.currentTime = 0;
+  sfxSpawn.play().catch(() => {});
+  floatingTexts.push({
+    x: kite.x,
+    y: kite.y - 35,
+    text: 'Entrou na batalha!',
+    vy: -1.2,
+    life: 70
+  });
+  return kite;
+}
+
+function ensureQueuePreview(userId, name, avatarUrl, bonusPower) {
+  let kite = queuePreviewKites.get(userId);
+  if (!kite) {
+    kite = new Kite(userId, name, avatarUrl, bonusPower || 0);
+    kite.targetY = randomBetween(getSkyBottom() - 80, getSkyBottom());
+    queuePreviewKites.set(userId, kite);
+  } else if (bonusPower > 0) {
+    kite.addPower(bonusPower);
+  }
+  return kite;
+}
+
+function syncQueuePreview() {
+  const queuedIds = new Set(nextBattleQueue.map(p => p.userId));
+  queuePreviewKites.forEach((_kite, userId) => {
+    if (!queuedIds.has(userId)) queuePreviewKites.delete(userId);
+  });
+  nextBattleQueue.slice(0, 12).forEach((p) => {
+    ensureQueuePreview(p.userId, p.name, p.avatarUrl, p.bonusPower || 0);
+  });
+}
+
+function updateAndDrawQueuePreview(t, dt) {
+  syncQueuePreview();
+  queuePreviewKites.forEach((kite) => {
+    kite.targetY = clamp(kite.targetY, getSkyBottom() - 95, getSkyBottom());
+    kite.update(t, dt);
+    kite.draw(t);
+  });
+}
+
+function fillQueueWithFakePlayers() {
+  let fakeIndex = 0;
+  while (nextBattleQueue.length < MIN_PLAYERS) {
+    const name = FAKE_NAMES[fakeIndex % FAKE_NAMES.length];
+    const userId = `fake_queue_${Date.now()}_${fakeIndex}`;
+    fakeIndex++;
+    addToQueue(userId, name, '', Math.floor(Math.random() * 8));
   }
 }
 
@@ -659,6 +785,10 @@ function handleChatEvent(userId, name, avatarUrl) {
       return;
     }
   }
+  if (battleState === 'fighting' || battleState === 'fake') {
+    addToQueue(userId, name, avatarUrl, 0);
+    return;
+  }
   addToQueue(userId, name, avatarUrl, 0);
 }
 
@@ -671,12 +801,20 @@ function handleGiftEvent(userId, name, avatarUrl, value) {
       return;
     }
   }
+  if (battleState === 'fighting' || battleState === 'fake') {
+    addToQueue(userId, name, avatarUrl, value);
+    return;
+  }
   addToQueue(userId, name, avatarUrl, value);
 }
 
 function handleJoinEvent(userId, name, avatarUrl) {
   // Só adiciona se não está na batalha atual
   if (kites.has(userId)) return;
+  if (battleState === 'fighting' || battleState === 'fake') {
+    addToQueue(userId, name, avatarUrl, 0);
+    return;
+  }
   addToQueue(userId, name, avatarUrl, 0);
 }
 
@@ -711,6 +849,7 @@ function startBattle(isFake) {
     const kite = new Kite(p.userId, p.name, p.avatarUrl, p.bonusPower || 0);
     kites.set(p.userId, kite);
   });
+  queuePreviewKites.clear();
 
   battleState = isFake ? 'fake' : 'fighting';
   battleStart = performance.now();
@@ -730,7 +869,13 @@ function updateBattleState() {
       battleState = 'countdown';
       countdownStart = now;
     } else if (now > 5000) { // Se passar 5 segundos e não tiver ninguém, inicia fake
-      startBattle(true);
+      if (nextBattleQueue.length > 0) {
+        fillQueueWithFakePlayers();
+        battleState = 'countdown';
+        countdownStart = now;
+      } else {
+        startBattle(true);
+      }
     }
   }
 
@@ -799,7 +944,7 @@ function updateHUD() {
 
   if (battleState === 'waiting') {
     timerEl.innerText = '--:--';
-    subEl.innerText = '💬 Comente para entrar na batalha!';
+    subEl.innerText = 'Comente para entrar na proxima batalha!';
   }
 
   else if (battleState === 'countdown') {
@@ -816,7 +961,10 @@ function updateHUD() {
     const secs = Math.floor(remaining % 60);
     timerEl.innerText = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
     const aliveCount = Array.from(kites.values()).filter(k => k.alive).length;
-    subEl.innerText = `⚔️ ${aliveCount} pipas vivas!`;
+    const queuedCount = nextBattleQueue.length;
+    subEl.innerText = queuedCount > 0
+      ? `LUTA! ${aliveCount} pipas vivas • ${queuedCount} na proxima`
+      : `LUTA! ${aliveCount} pipas vivas`;
   }
 
   else if (battleState === 'fake') {
@@ -826,7 +974,10 @@ function updateHUD() {
     const secs = Math.floor(remaining % 60);
     timerEl.innerText = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
     const aliveCount = Array.from(kites.values()).filter(k => k.alive).length;
-    subEl.innerText = `🎭 EXIBIÇÃO • ${aliveCount} pipas • Comente para entrar!`;
+    const queuedCount = nextBattleQueue.length;
+    subEl.innerText = queuedCount > 0
+      ? `EXIBICAO • ${aliveCount} pipas • ${queuedCount} na proxima`
+      : `EXIBICAO • ${aliveCount} pipas • Comente para a proxima!`;
   }
 
   else if (battleState === 'victory') {
@@ -958,6 +1109,15 @@ function drawBattleOverlay(t) {
 }
 
 // ========== LEADERBOARD ==========
+function escapeHtml(value) {
+  return String(value || '')
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
 function renderLeaderboard() {
   const el = document.getElementById('leaderboard');
   if (!el) return;
@@ -971,8 +1131,8 @@ function renderLeaderboard() {
     el.innerHTML = alive.map((k, i) => `
       <div class="lb-row">
         <span class="lb-rank">${i + 1}º</span>
-        <img src="${k.img.src}" onerror="this.style.visibility='hidden'" />
-        <span>${k.name}</span>
+        <img src="${escapeHtml(k.img.src)}" onerror="this.style.visibility='hidden'" />
+        <span>${escapeHtml(k.name)}</span>
         <span class="lb-cuts">❤️ ${Math.ceil(k.hp)}</span>
       </div>
     `).join('');
@@ -980,8 +1140,8 @@ function renderLeaderboard() {
     el.innerHTML = nextBattleQueue.slice(0, 8).map((p, i) => `
       <div class="lb-row">
         <span class="lb-rank">${i + 1}º</span>
-        <img src="${p.avatarUrl}" onerror="this.style.visibility='hidden'" />
-        <span>${p.name}</span>
+        <img src="${escapeHtml(p.avatarUrl)}" onerror="this.style.visibility='hidden'" />
+        <span>${escapeHtml(p.name)}</span>
         <span class="lb-cuts">🪁</span>
       </div>
     `).join('');
@@ -999,12 +1159,14 @@ function loop(t) {
 
   updateBattleState();
 
-  // Atualiza e desenha pipas durante batalha
-  if (battleState === 'fighting' || battleState === 'fake' || battleState === 'victory') {
+  if (battleState === 'waiting' || battleState === 'countdown' || battleState === 'fighting' || battleState === 'fake' || battleState === 'victory') {
     kites.forEach(k => k.update(t, dt));
     updateFallenKites(dt);
     drawFallenKites(t);
     kites.forEach(k => k.alive && k.draw(t));
+    if (battleState === 'fighting' || battleState === 'fake' || battleState === 'victory') {
+      updateAndDrawQueuePreview(t, dt);
+    }
     updateAndDrawParticles(dt);
     updateAndDrawFloatingTexts(dt);
   }
