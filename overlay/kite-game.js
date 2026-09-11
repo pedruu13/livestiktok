@@ -192,16 +192,18 @@ class Kite {
   draw(t) {
     const isCutFlash = t < this.cutFlashUntil;
 
-    // linha (string) até o chão, com leve curva de vento
-    ctx.strokeStyle = isCutFlash ? '#ff4d4d' : 'rgba(255,255,255,0.8)';
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.moveTo(this.anchorX, window.innerHeight);
-    ctx.quadraticCurveTo(this.x, (this.y + window.innerHeight) / 2, this.x, this.y + 22);
-    ctx.stroke();
+    // linha (string) até o chão, apenas se estiver viva
+    if (this.alive) {
+      ctx.strokeStyle = isCutFlash ? '#ff4d4d' : 'rgba(255,255,255,0.8)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(this.anchorX, window.innerHeight);
+      ctx.quadraticCurveTo(this.x, (this.y + window.innerHeight) / 2, this.x, this.y + 22);
+      ctx.stroke();
+    }
 
-    // rabiola ondulando, seguindo o rastro da pipa (desenha antes do corpo)
-    if (this.trail.length > 2) {
+    // rabiola ondulando, seguindo o rastro da pipa (apenas viva)
+    if (this.alive && this.trail.length > 2) {
       ctx.strokeStyle = 'rgba(255,255,255,0.55)';
       ctx.lineWidth = 1.5; // Linha da rabiola mais fina
       ctx.beginPath();
@@ -466,7 +468,9 @@ function cutKite(winner, loser) {
     life: 120 // duração de +- 2 segundos na tela
   });
 
-  const fallen = { kite: loser, x: loser.x, y: loser.y, vy: -5.0, createdAt: performance.now(), caughtBy: null };
+  // Dá um leve empurrão lateral (vx) para ela cair balançando, e vy bem fraco pra não voar pra fora da tela
+  const vx = (Math.random() - 0.5) * 4.0;
+  const fallen = { kite: loser, x: loser.x, y: loser.y, vx: vx, vy: -1.0, createdAt: performance.now(), caughtBy: null };
   fallenKites.push(fallen);
   winner.chasing = fallen;
 }
@@ -474,6 +478,7 @@ function cutKite(winner, loser) {
 function updateFallenKites(dt) {
   const now = performance.now();
   fallenKites = fallenKites.filter((f) => {
+    if (f.vx) f.x += f.vx * dt; // cai para os lados
     f.y += f.vy * dt;
     f.vy += 0.15 * dt; // Gravidade mais forte para ela cair depois de pular
 
