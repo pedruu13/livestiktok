@@ -729,6 +729,8 @@ function updateBattleState() {
     if (nextBattleQueue.length >= MIN_PLAYERS) {
       battleState = 'countdown';
       countdownStart = now;
+    } else if (now > 5000) { // Se passar 5 segundos e não tiver ninguém, inicia fake
+      startBattle(true);
     }
   }
 
