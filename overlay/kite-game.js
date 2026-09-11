@@ -54,6 +54,7 @@ class Kite {
     this.phase = Math.random() * Math.PI * 2;
     this.lastActive = performance.now();
     this.cutFlashUntil = 0;
+    this.combatCooldownUntil = 0; // Cooldown após matar alguém
     this.shieldUntil = 0; // Escudo comprado com presentes
     this.spawnInvulnerableUntil = performance.now() + 5000; // 5 SEGUNDOS DE IMUNIDADE AO NASCER
     this.bodyColor = BODY_COLORS[Math.floor(Math.random() * BODY_COLORS.length)];
@@ -140,6 +141,8 @@ class Kite {
           const targetGiftShield = now < this.target.shieldUntil;
           const mySpawnShield = now < this.spawnInvulnerableUntil;
           const targetSpawnShield = now < this.target.spawnInvulnerableUntil;
+          const myCooldown = now < this.combatCooldownUntil;
+          const targetCooldown = now < this.target.combatCooldownUntil;
 
           if (myGiftShield && targetGiftShield) {
             // Empate de presentes (ambas com escudo pago)
@@ -150,10 +153,9 @@ class Kite {
             cutKite(this, this.target);
           } else if (targetGiftShield && !myGiftShield) {
             cutKite(this.target, this);
-          } else if (mySpawnShield || targetSpawnShield) {
-            // Se alguém é recém-nascido, a pipa vira "FANTASMA" e apenas REBATE.
+          } else if (mySpawnShield || targetSpawnShield || myCooldown || targetCooldown) {
+            // Se alguém é recém-nascido ou está de cooldown (cansado após um corte), a pipa vira "FANTASMA" e apenas REBATE.
             // Ela não morre, mas também NÃO CORTA NINGUÉM. 
-            // Isso impede que um nível 1 mate um veterano VIP de graça.
             this.target = null;
             this.debicarDx *= -1; 
           } else {
@@ -446,6 +448,11 @@ function cutKite(winner, loser) {
   loser.deadAt = performance.now();
   winner.cuts += 1;
   winner.cutFlashUntil = performance.now() + 200;
+  
+  // NOVO: Adiciona um tempo de recarga (cooldown) de 1.5s após cortar alguém
+  // Isso impede que uma pipa corte 30 pipas seguidas em 1 segundo (efeito "velocidade absurda")
+  winner.combatCooldownUntil = performance.now() + 1500;
+  
   sfxCut.currentTime = 0;
   sfxCut.play().catch(()=>{});
   spawnCutParticles(loser.x, loser.y);
