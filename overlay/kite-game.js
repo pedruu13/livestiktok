@@ -394,24 +394,33 @@ function updateFallenKites(dt) {
     f.y += f.vy * dt;
     f.vy += 0.15 * dt; // Gravidade mais forte para ela cair depois de pular
 
-    kites.forEach((k) => {
-      if (!k.alive || k.chasing !== f) return;
-      
-      // DEFEITO GRAVE CORRIGIDO AQUI: A pipa vencedora estava tão perto que
-      // "aparava a rabiola" no mesmo milissegundo, fazendo o perdedor evaporar!
-      // Agora o perdedor tem 600ms de carência voando antes de poder ser pego.
-      if (now - f.createdAt < 600) return;
+    if (!f.caughtBy) {
+      kites.forEach((k) => {
+        if (!k.alive || k.chasing !== f) return;
+        
+        // O perdedor tem 600ms de carência voando antes de poder ser pego.
+        if (now - f.createdAt < 600) return;
 
-      const dist = Math.hypot(k.x - f.x, k.y - f.y);
-      if (dist < CATCH_DISTANCE) {
-        k.trophies += 1;
-        k.chasing = null;
-        f.caughtBy = k;
-      }
-    });
+        const dist = Math.hypot(k.x - f.x, k.y - f.y);
+        if (dist < CATCH_DISTANCE) {
+          k.trophies += 1;
+          k.chasing = null;
+          f.caughtBy = k;
+
+          // NOVO: Avisa na tela que pegou a rabiola!
+          floatingTexts.push({
+            x: f.x,
+            y: f.y,
+            text: `🪁 +1 Troféu!`,
+            vy: -1.0,
+            life: 90
+          });
+        }
+      });
+    }
 
     const expired = f.y > window.innerHeight + 100; // Só some quando cair fora da tela
-    if (expired || f.caughtBy) {
+    if (expired) { // CORRIGIDO AQUI: Removemos o "|| f.caughtBy" para não sumir no meio do ar!
       kites.forEach((k) => { if (k.chasing === f) k.chasing = null; });
       return false;
     }
@@ -502,8 +511,9 @@ function loop(t) {
     spawnCutParticles(k.x, k.y);
     fallenKites.push({ kite: k, x: k.x, y: k.y, vy: -3.0, createdAt: performance.now(), caughtBy: null });
   }
+  const canDieFromInactivity = activeKites.length > 3; // Mantém no mínimo 3 pipas vivas na tela para não ficar vazia
   activeKites.forEach(k => {
-    if (now - k.lastActive > 60000 && k.power < 50) {
+    if (canDieFromInactivity && now - k.lastActive > 60000 && k.power < 50) {
       k.alive = false;
       k.deadAt = performance.now();
       spawnCutParticles(k.x, k.y);
