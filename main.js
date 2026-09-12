@@ -17,12 +17,19 @@ function createWindow() {
     resizable: false,
     autoHideMenuBar: true,
     title: "Pipa Combate - Painel",
+    backgroundColor: '#0f172a', // Cor de fundo do painel
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true
     }
   });
+
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
   mainWindow.loadFile('public/index.html');
 }
 
@@ -74,12 +81,18 @@ ipcMain.on('start-connection', async (event, data) => {
         frame: false, // <-- Tira a barra superior e as bordas (PERFEITO PARA CAPTURA)
         resizable: false,
         autoHideMenuBar: true,
+        backgroundColor: '#000000', // <-- EVITA A TELA BRANCA INICIAL
+        show: false, // Só mostra depois que carregar
         title: "Pipa Combate - Tela do Jogo (Ao Vivo)",
         webPreferences: {
           autoplayPolicy: 'no-user-gesture-required'
         }
       });
       
+      gameWindow.once('ready-to-show', () => {
+        gameWindow.show();
+      });
+
       gameWindow.on('closed', () => {
         gameWindow = null;
       });
