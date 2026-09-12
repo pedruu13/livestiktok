@@ -148,7 +148,7 @@ function renderScoreboard() {
             <span class="team-members">${team.members.size} torcedores</span>
           </div>
           <div class="team-bar-container">
-            <div class="team-bar-fill" style="width: ${progressPct}%;">PRESSÃO ${team.attacks}/${ATTACKS_FOR_GOAL}</div>
+            <div class="team-bar-fill" style="width: ${progressPct}%; background-color: ${team.color};"></div><div class="team-bar-text">PRESSÃO ${team.attacks}/${ATTACKS_FOR_GOAL}</div>
           </div>
           <div class="team-goals">
             <span class="goals-number">${team.goals}</span>

@@ -117,13 +117,23 @@ html, body {
 .team-bar-fill {
   height: 100%;
   transition: width 0.3s ease;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7));
+  /* background-color é definido inline com a cor do time agora */
+}
+
+.team-bar-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
   font-size: 14px;
-  color: #111;
+  color: #fff;
+  text-shadow: 1px 1px 3px #000;
+  white-space: nowrap;
 }
 
 .team-goals {
