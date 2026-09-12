@@ -1,17 +1,17 @@
-const BRASILEIRAO = {
+Ôªøconst BRASILEIRAO = {
   flamengo: { name: 'Flamengo', color: '#C52728', aliases: ['flamengo', 'mengo', 'mengao', 'fla'] },
-  corinthians: { name: 'Corinthians', color: '#ffffff', aliases: ['corinthians', 'timao', 'curingao', 'timao'] },
+  corinthians: { name: 'Corinthians', color: '#ffffff', aliases: ['corinthians', 'timao', 'curingao'] },
   palmeiras: { name: 'Palmeiras', color: '#006437', aliases: ['palmeiras', 'verdao', 'porco'] },
-  saopaulo: { name: 'S„o Paulo', color: '#FE0000', aliases: ['sao paulo', 'saopaulo', 'tricolor', 'spfc'] },
+  saopaulo: { name: 'S√£o Paulo', color: '#FE0000', aliases: ['sao paulo', 'saopaulo', 'tricolor', 'spfc'] },
   vasco: { name: 'Vasco', color: '#FFFFFF', aliases: ['vasco', 'vascao', 'gigante'] },
   botafogo: { name: 'Botafogo', color: '#FFFFFF', aliases: ['botafogo', 'fogao', 'estrela'] },
   fluminense: { name: 'Fluminense', color: '#9F243A', aliases: ['fluminense', 'flu', 'nense'] },
-  gremio: { name: 'GrÍmio', color: '#0D80BF', aliases: ['gremio', 'imortal', 'tricolor gaucho'] },
+  gremio: { name: 'Gr√™mio', color: '#0D80BF', aliases: ['gremio', 'imortal', 'tricolor'] },
   inter: { name: 'Internacional', color: '#E50000', aliases: ['internacional', 'inter', 'colorado'] },
   cruzeiro: { name: 'Cruzeiro', color: '#003A94', aliases: ['cruzeiro', 'cabuloso', 'raposa'] },
-  atleticomg: { name: 'AtlÈtico-MG', color: '#FFFFFF', aliases: ['atletico', 'galo', 'mineiro', 'cam'] },
-  bahia: { name: 'Bahia', color: '#0054A6', aliases: ['bahia', 'bahea', 'tricolor de aco'] },
-  vitoria: { name: 'VitÛria', color: '#ED1C24', aliases: ['vitoria', 'leao'] },
+  atleticomg: { name: 'Atl√©tico-MG', color: '#FFFFFF', aliases: ['atletico', 'galo', 'mineiro', 'cam'] },
+  bahia: { name: 'Bahia', color: '#0054A6', aliases: ['bahia', 'bahea', 'tricolor'] },
+  vitoria: { name: 'Vit√≥ria', color: '#ED1C24', aliases: ['vitoria', 'leao'] },
   sport: { name: 'Sport', color: '#D30A11', aliases: ['sport', 'leao da ilha'] },
   santos: { name: 'Santos', color: '#FFFFFF', aliases: ['santos', 'peixe', 'santastico'] }
 };
@@ -69,8 +69,13 @@ function getOrCreateTeam(key) {
   return teams.get(key);
 }
 
+// Criar times iniciais para n√£o ficar vazio:
+getOrCreateTeam('flamengo');
+getOrCreateTeam('corinthians');
+
 function connectWs() {
-  const ws = new WebSocket(ws:// + location.host + /ws);
+  const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const ws = new WebSocket(`${protocol}//${location.host || 'localhost:3001'}/ws`);
 
   ws.onmessage = (msg) => {
     try {
@@ -80,7 +85,7 @@ function connectWs() {
         window.location.href = data.url;
       }
 
-      // Coment·rio = Press„o (Ataque)
+      // Coment√°rio = Press√£o (Ataque)
       if (data.type === 'chat') {
         const teamKey = findTeamByAlias(data.text);
         if (teamKey) {
@@ -92,12 +97,10 @@ function connectWs() {
 
       // Presente = Gol Direto! (1 moeda = 1 gol)
       if (data.type === 'gift') {
-        // Se a pessoa comentar o nome do time junto com o presente, a gente lÍ
         const teamKey = findTeamByAlias(data.text);
         if (teamKey) {
           const team = getOrCreateTeam(teamKey);
           team.addMember(data.userId);
-          // O valor do presente È em moedas. Estimando 1 rosa = 1 gol
           team.addGoal(data.value || 1);
         }
       }
@@ -112,13 +115,12 @@ function connectWs() {
   };
 
   ws.onopen = () => {
-    document.getElementById('status').textContent = 'Conectado ‡ live!';
+    document.getElementById('status').textContent = 'Conectado √† live!';
   };
 }
 
 function renderScoreboard() {
   const sb = document.getElementById('teams-scoreboard');
-  // Ordenar por gols (desc) e depois por ataques (desc)
   const sorted = Array.from(teams.values()).sort((a, b) => {
     if (b.goals !== a.goals) return b.goals - a.goals;
     return b.attacks - a.attacks;
@@ -127,22 +129,22 @@ function renderScoreboard() {
   sb.innerHTML = sorted
     .map((team, idx) => {
       const progressPct = (team.attacks / ATTACKS_FOR_GOAL) * 100;
-      return 
-        <div class="team-bar" style="border-left-color: ">
-          <div class="team-rank">∫</div>
+      return `
+        <div class="team-bar" style="border-left-color: ${team.color}">
+          <div class="team-rank">${idx + 1}¬∫</div>
           <div class="team-info">
-            <span class="team-name" style="color: "></span>
-            <span class="team-members"> torcedores</span>
+            <span class="team-name" style="color: ${team.color}">${team.name}</span>
+            <span class="team-members">${team.members.size} torcedores</span>
           </div>
           <div class="team-bar-container">
-            <div class="team-bar-fill" style="width: %;">PRESS√O /</div>
+            <div class="team-bar-fill" style="width: ${progressPct}%;">PRESS√ÉO ${team.attacks}/${ATTACKS_FOR_GOAL}</div>
           </div>
           <div class="team-goals">
-            <span class="goals-number"></span>
+            <span class="goals-number">${team.goals}</span>
             <span class="goals-label">GOLS</span>
           </div>
         </div>
-      ;
+      `;
     })
     .join('');
 }
@@ -151,12 +153,15 @@ function renderTimer() {
   const remaining = Math.max(0, Math.round((roundEndsAt - Date.now()) / 1000));
   const m = String(Math.floor(remaining / 60)).padStart(2, '0');
   const s = String(remaining % 60).padStart(2, '0');
-  document.getElementById('timer').textContent = ${m}:;
+  document.getElementById('timer').textContent = `${m}:${s}`;
 
   if (remaining === 0) {
     announceWinner();
     roundEndsAt = Date.now() + roundSeconds * 1000;
     teams.clear();
+    // Recria os times base
+    getOrCreateTeam('flamengo');
+    getOrCreateTeam('corinthians');
   }
 }
 
@@ -164,7 +169,7 @@ function announceWinner() {
   if (teams.size === 0) return;
   const sorted = Array.from(teams.values()).sort((a, b) => b.goals - a.goals);
   const winner = sorted[0];
-  alert(??  VENCEU A COPA TIKTOK COM  GOLS!);
+  alert(`üèÜ ${winner.name} VENCEU A COPA TIKTOK COM ${winner.goals} GOLS!`);
 }
 
 function loop() {
