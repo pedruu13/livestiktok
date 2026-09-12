@@ -23,7 +23,7 @@ function createWindow() {
       contextIsolation: true
     }
   });
-  mainWindow.loadFile('public/dashboard/index.html');
+  mainWindow.loadFile('public/index.html');
 }
 
 app.whenReady().then(() => {
@@ -42,8 +42,9 @@ app.whenReady().then(() => {
 
 let currentTiktokConnection = null;
 
-ipcMain.on('start-connection', async (event, username) => {
-  username = username.replace('@', '').trim(); // LIMPEZA AUTOMÁTICA DO ARROBA
+ipcMain.on('start-connection', async (event, data) => {
+  const { username: rawUsername, gameUrl } = data;
+  const username = rawUsername.replace('@', '').trim(); // LIMPEZA AUTOMÁTICA DO ARROBA
   try {
     if (currentTiktokConnection) {
       currentTiktokConnection.disconnect();
@@ -78,12 +79,14 @@ ipcMain.on('start-connection', async (event, username) => {
           autoplayPolicy: 'no-user-gesture-required'
         }
       });
-      gameWindow.loadURL('http://localhost:3001');
       
       gameWindow.on('closed', () => {
         gameWindow = null;
       });
     }
+    
+    // Sempre carrega o jogo selecionado
+    gameWindow.loadURL(`http://localhost:3001${gameUrl || '/games/pipas/'}`);
 
   } catch (err) {
     event.reply('connection-status', { 

@@ -134,6 +134,13 @@
   </div>
 
   <script>
+    // Recupera o jogo escolhido no Launcher
+    const params = new URLSearchParams(window.location.search);
+    const initialGame = params.get('game');
+    if (initialGame) {
+      document.getElementById('game-selector').value = initialGame;
+    }
+
     document.getElementById('changeGameBtn').addEventListener('click', () => {
       const gameUrl = document.getElementById('game-selector').value;
       window.tiktokKite.changeGame(gameUrl);
@@ -147,7 +154,8 @@
       st.innerText = 'Buscando live...';
       st.style.color = '#fff';
       
-      window.tiktokKite.startConnection(user);
+      const gameUrl = document.getElementById('game-selector').value;
+      window.tiktokKite.startConnection(user, gameUrl);
     });
 
     document.getElementById('vol').addEventListener('input', (e) => {

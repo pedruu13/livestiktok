@@ -17,7 +17,8 @@ function loadGame(gameName) {
 
   const gameUrl = games[gameName];
   if (gameUrl) {
-    window.location.href = gameUrl;
+    // Ao invés de abrir o jogo direto, manda pro Dashboard pra conectar!
+    window.location.href = '/dashboard/index.html?game=' + encodeURIComponent(gameUrl);
   }
 }
 
@@ -26,7 +27,6 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '1') loadGame('pipas');
   if (e.key === '2') loadGame('times');
   if (e.key === '3') loadGame('gift-rain');
-  if (e.key === 'Escape') console.log('Press 1, 2, or 3 to select a game, or click above');
 });
 
 
