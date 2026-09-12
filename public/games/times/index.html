@@ -1,26 +1,41 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>⚽ Batalha de Times - Brasileirão</title>
-  <link rel="stylesheet" href="teams.css" />
+  <meta charset="UTF-8">
+  <title>Jogo de Times</title>
+  <link rel="stylesheet" href="teams.css">
 </head>
 <body>
-  <div id="teams-container">
-    <div id="teams-header">
-      <h1>🏆 Copa TikTok</h1>
+
+  <div id="game-container">
+    <div id="header">
+      <div class="trophy">🏆</div>
+      <h1>COPA TIKTOK</h1>
+    </div>
+
+    <div id="timer-container">
       <div id="timer">05:00</div>
     </div>
 
-    <div id="teams-scoreboard"></div>
+    <div id="teams-scoreboard">
+      <!-- Injetado via JS -->
+    </div>
 
     <div id="instructions">
       <h3>COMO JOGAR:</h3>
-      <p>1️⃣ <strong>COMENTE</strong> o nome do seu time para entrar na torcida.</p>
-      <p>2️⃣ Floodar o chat dá <strong>PRESSÃO</strong> (Gols demorados).</p>
-      <p>3️⃣ Mandar <strong>PRESENTES</strong> dá <strong>GOL DIRETO</strong> (Obrigatório comentar o time antes!)</p>
+      <p>1️⃣ <strong>COMENTE</strong> seu time para entrar.</p>
+      <p>2️⃣ Floodar dá <strong>PRESSÃO</strong>.</p>
+      <p>3️⃣ <strong>PRESENTES</strong> dão <strong>GOL DIRETO</strong>!</p>
       <p id="status">Aguardando conexão...</p>
+    </div>
+  </div>
+
+  <!-- Modal de Vitória -->
+  <div id="winner-modal" class="hidden">
+    <div class="winner-content">
+      <div class="winner-trophy">🏆</div>
+      <h1 id="winner-name">FLAMENGO VENCEU!</h1>
+      <p id="winner-goals">Com 10 Gols</p>
     </div>
   </div>
 

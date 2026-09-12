@@ -16,10 +16,32 @@
   santos: { name: 'Santos', color: '#FFFFFF', aliases: ['santos', 'peixe', 'santastico'] }
 };
 
-const teams = new Map(); // { key: Team }
-const roundSeconds = 300; // 5 minutos por rodada
+const teams = new Map();
+const roundSeconds = 300;
 let roundEndsAt = Date.now() + roundSeconds * 1000;
 const ATTACKS_FOR_GOAL = 20;
+
+// Variáveis para controle de áudio
+const audioCache = {};
+let lastAudioTime = 0;
+const AUDIO_COOLDOWN = 3000;
+
+function playTeamAudio(teamKey) {
+  const now = Date.now();
+  if (now - lastAudioTime < AUDIO_COOLDOWN) return;
+  
+  if (!audioCache[teamKey]) {
+    audioCache[teamKey] = new Audio(`audio/${teamKey}.mp3`);
+    audioCache[teamKey].volume = 0.5;
+  }
+  
+  const audio = audioCache[teamKey];
+  audio.currentTime = 0;
+  
+  audio.play().then(() => {
+    lastAudioTime = Date.now();
+  }).catch(() => {});
+}
 
 class Team {
   constructor(key, data) {
@@ -69,7 +91,7 @@ function getOrCreateTeam(key) {
   return teams.get(key);
 }
 
-// Criar times iniciais para não ficar vazio:
+// Inicializa times padrão
 getOrCreateTeam('flamengo');
 getOrCreateTeam('corinthians');
 
@@ -85,7 +107,6 @@ function connectWs() {
         window.location.href = data.url;
       }
 
-      // Comentário = Pressão (Ataque)
       if (data.type === 'chat') {
         const teamKey = findTeamByAlias(data.text);
         if (teamKey) {
@@ -96,10 +117,7 @@ function connectWs() {
         }
       }
 
-      // Presente = Gol Direto! (1 moeda = 1 gol)
       if (data.type === 'gift') {
-        // Como o TikTok não manda texto no presente, precisamos descobrir de qual time o doador é!
-        // Nós olhamos em qual time o userId dele está registrado (ou seja, qual time ele comentou antes).
         let userTeam = null;
         for (const team of teams.values()) {
           if (team.members.has(data.userId)) {
@@ -107,12 +125,9 @@ function connectWs() {
             break;
           }
         }
-
         if (userTeam) {
           userTeam.addGoal(data.value || 1);
           playTeamAudio(userTeam.key);
-        } else {
-          console.log('Presente recebido de alguém sem time:', data.userId);
         }
       }
     } catch (err) {
@@ -132,35 +147,38 @@ function connectWs() {
 
 function renderScoreboard() {
   const sb = document.getElementById('teams-scoreboard');
+  
   const sorted = Array.from(teams.values()).sort((a, b) => {
     if (b.goals !== a.goals) return b.goals - a.goals;
     return b.attacks - a.attacks;
   });
 
-  sb.innerHTML = sorted
-    .map((team, idx) => {
-      const progressPct = (team.attacks / ATTACKS_FOR_GOAL) * 100;
-      return `
-        <div class="team-bar" style="border-left-color: ${team.color}">
+  sb.innerHTML = sorted.map((team, idx) => {
+    const progressPct = (team.attacks / ATTACKS_FOR_GOAL) * 100;
+    // Opcional: Para times que usam branco como cor principal (Santos/Vasco/Galo), o texto fica legível por causa do shadow
+    return `
+      <div class="team-card" style="border-left-color: ${team.color}">
+        <div class="team-progress" style="width: ${progressPct}%; background-color: ${team.color};"></div>
+        <div class="team-content">
           <div class="team-rank">${idx + 1}º</div>
           <div class="team-info">
-            <span class="team-name" style="color: ${team.color}">${team.name}</span>
-            <span class="team-members">${team.members.size} torcedores</span>
+            <div class="team-name" style="color: ${team.color}">${team.name}</div>
+            <div class="team-stats">PRESSÃO: ${team.attacks}/${ATTACKS_FOR_GOAL} • ${team.members.size} Torcedores</div>
           </div>
-          <div class="team-bar-container">
-            <div class="team-bar-fill" style="width: ${progressPct}%; background-color: ${team.color};"></div><div class="team-bar-text">PRESSÃO ${team.attacks}/${ATTACKS_FOR_GOAL}</div>
-          </div>
-          <div class="team-goals">
-            <span class="goals-number">${team.goals}</span>
-            <span class="goals-label">GOLS</span>
+          <div class="team-score" style="border-color: ${team.color}">
+            <span class="score-number">${team.goals}</span>
+            <span class="score-label">GOLS</span>
           </div>
         </div>
-      `;
-    })
-    .join('');
+      </div>
+    `;
+  }).join('');
 }
 
+let isModalOpen = false;
+
 function renderTimer() {
+  if (isModalOpen) return;
   const remaining = Math.max(0, Math.round((roundEndsAt - Date.now()) / 1000));
   const m = String(Math.floor(remaining / 60)).padStart(2, '0');
   const s = String(remaining % 60).padStart(2, '0');
@@ -168,49 +186,48 @@ function renderTimer() {
 
   if (remaining === 0) {
     announceWinner();
-    roundEndsAt = Date.now() + roundSeconds * 1000;
-    teams.clear();
-    // Recria os times base
-    getOrCreateTeam('flamengo');
-    getOrCreateTeam('corinthians');
   }
 }
 
 function announceWinner() {
   if (teams.size === 0) return;
-  const sorted = Array.from(teams.values()).sort((a, b) => b.goals - a.goals);
+  
+  isModalOpen = true;
+  
+  const sorted = Array.from(teams.values()).sort((a, b) => {
+    if (b.goals !== a.goals) return b.goals - a.goals;
+    return b.attacks - a.attacks;
+  });
   const winner = sorted[0];
-  alert(`🏆 ${winner.name} VENCEU A COPA TIKTOK COM ${winner.goals} GOLS!`);
+  
+  const modal = document.getElementById('winner-modal');
+  const title = document.getElementById('winner-name');
+  const desc = document.getElementById('winner-goals');
+  
+  title.textContent = `🏆 ${winner.name} VENCEU!`;
+  title.style.color = winner.color;
+  desc.textContent = `Com ${winner.goals} GOLS e ${winner.attacks} ATAQUES!`;
+  
+  modal.classList.remove('hidden');
+  
+  // Reseta depois de 5 segundos
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    roundEndsAt = Date.now() + roundSeconds * 1000;
+    teams.clear();
+    getOrCreateTeam('flamengo');
+    getOrCreateTeam('corinthians');
+    isModalOpen = false;
+  }, 5000);
 }
 
 function loop() {
-  renderScoreboard();
-  renderTimer();
+  if (!isModalOpen) {
+    renderScoreboard();
+    renderTimer();
+  }
   requestAnimationFrame(loop);
 }
 
 connectWs();
 requestAnimationFrame(loop);
-// Vari�veis para controle de �udio
-const audioCache = {};
-let lastAudioTime = 0;
-const AUDIO_COOLDOWN = 3000; // Toca 1 m�sica no m�ximo a cada 3 segundos pra n�o encavalar
-
-function playTeamAudio(teamKey) {
-  const now = Date.now();
-  if (now - lastAudioTime < AUDIO_COOLDOWN) return; // Ignora se tocou agora pouco
-  
-  if (!audioCache[teamKey]) {
-    audioCache[teamKey] = new Audio(`audio/${teamKey}.mp3`);
-    audioCache[teamKey].volume = 0.5;
-  }
-  
-  const audio = audioCache[teamKey];
-  audio.currentTime = 0;
-  
-  audio.play().then(() => {
-    lastAudioTime = Date.now();
-  }).catch(() => {
-    // Arquivo n�o existe ou navegador bloqueou, n�o faz nada
-  });
-}
