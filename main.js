@@ -12,11 +12,11 @@ let broadcastFunc = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 450,
-    height: 620,
-    resizable: false,
+    width: 900,
+    height: 750,
+    resizable: true,
     autoHideMenuBar: true,
-    title: "Pipa Combate - Painel",
+    title: "LiveTikTok - Painel Unificado",
     backgroundColor: '#0f172a', // Cor de fundo do painel
     show: false,
     webPreferences: {

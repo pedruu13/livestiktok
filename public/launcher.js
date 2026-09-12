@@ -1,41 +1,63 @@
-// Launcher - Menu de seleÃ§Ã£o de jogos
+let currentGame = '/games/pipas/';
 
+// Seleção de jogo via clique nos cards
 document.querySelectorAll('.game-card').forEach((card) => {
-  card.querySelector('.play-btn').addEventListener('click', () => {
-    const game = card.dataset.game;
-    loadGame(game);
+  card.addEventListener('click', () => {
+    // Remove active das outras
+    document.querySelectorAll('.game-card').forEach(c => c.classList.remove('active'));
+    // Adiciona na atual
+    card.classList.add('active');
+    
+    currentGame = card.dataset.game;
+    
+    // Dispara mudança de jogo pro main.js (já atualiza gameWindow e OBS na hora se tiver conectado)
+    if (window.tiktokKite) {
+      window.tiktokKite.changeGame(currentGame);
+    }
   });
 });
 
-function loadGame(gameName) {
-  // Mapeia o nome do jogo pra a URL correta
-  const games = {
-    pipas: '/games/pipas/',
-    times: '/games/times/',
-    'gift-rain': '/games/gift-rain/',
-  };
-
-  const gameUrl = games[gameName];
-  if (gameUrl) {
-    // Ao invÃ©s de abrir o jogo direto, manda pro Dashboard pra conectar!
-    window.location.href = '/dashboard/index.html?game=' + encodeURIComponent(gameUrl);
-  }
-}
-
-// Keyboard shortcuts
+// Atalhos de teclado
 document.addEventListener('keydown', (e) => {
-  if (e.key === '1') loadGame('pipas');
-  if (e.key === '2') loadGame('times');
-  if (e.key === '3') loadGame('gift-rain');
+  if (e.key === '1') document.querySelectorAll('.game-card')[0].click();
+  if (e.key === '2') document.querySelectorAll('.game-card')[1].click();
+  if (e.key === '3') document.querySelectorAll('.game-card')[2].click();
 });
 
-
-// Recebe comandos do Painel para trocar de jogo no OBS
-const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-const ws = new WebSocket(${protocol}///ws);
-ws.onmessage = (event) => {
-  const msg = JSON.parse(event.data);
-  if (msg.type === 'change-game') {
-    window.location.href = msg.url;
+// Lógica de Conexão
+document.getElementById('connectBtn').addEventListener('click', () => {
+  const user = document.getElementById('username').value.trim();
+  if (!user) return alert('Por favor, digite seu usuário do TikTok!');
+  
+  const st = document.getElementById('status');
+  st.innerText = 'Status: Buscando live...';
+  st.style.color = '#fff';
+  
+  if (window.tiktokKite) {
+    window.tiktokKite.startConnection(user, currentGame);
   }
-};
+});
+
+if (window.tiktokKite) {
+  // Status da Conexão
+  window.tiktokKite.onConnectionStatus((data) => {
+    const st = document.getElementById('status');
+    st.innerText = 'Status: ' + data.msg;
+    st.style.color = data.success ? '#10b981' : '#ef4444'; // verde ou vermelho
+  });
+
+  // Configurações e Testes
+  document.getElementById('vol').addEventListener('input', (e) => {
+    window.tiktokKite.changeVolume(e.target.value / 100);
+  });
+
+  document.getElementById('testChatBtn').addEventListener('click', () => window.tiktokKite.sendTestEvent('chat'));
+  document.getElementById('testGiftBtn').addEventListener('click', () => window.tiktokKite.sendTestEvent('gift'));
+
+  document.getElementById('pos-leaderboard').addEventListener('change', (e) => {
+    window.tiktokKite.sendOverlayConfig({ target: 'leaderboard', value: e.target.value });
+  });
+  document.getElementById('pos-gifts').addEventListener('change', (e) => {
+    window.tiktokKite.sendOverlayConfig({ target: 'gifts', value: e.target.value });
+  });
+}

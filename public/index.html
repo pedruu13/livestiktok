@@ -3,42 +3,82 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>üéÆ LiveTikTok Launcher</title>
+  <title>?? LiveTikTok Launcher & Painel</title>
   <link rel="stylesheet" href="launcher.css" />
 </head>
 <body>
-  <div class="launcher-container">
-    <div class="launcher-header">
-      <h1>üéÆ LiveTikTok Launcher</h1>
-      <p>Escolha um jogo pra rodar na sua live</p>
+  <div class="app-container">
+    <div class="header">
+      <h1>?? LiveTikTok - Painel Unificado</h1>
     </div>
 
-    <div class="games-grid">
-      <div class="game-card" data-game="pipas">
-        <div class="game-icon">ü™Å</div>
-        <h2>Jogo de Pipas</h2>
-        <p>Pipas competem cortando uma a outra. Presentes fazem a pipa subir mais.</p>
-        <button class="play-btn">Jogar</button>
-      </div>
-
-      <div class="game-card" data-game="times">
-        <div class="game-icon">üë•</div>
-        <h2>Jogo de Times</h2>
-        <p>Times competem recebendo presentes. Coment√°rio = entra no time. Presente = ponto.</p>
-        <button class="play-btn">Jogar</button>
-      </div>
-
-      <div class="game-card" data-game="gift-rain">
-        <div class="game-icon">üéÅ</div>
-        <h2>Gift Rain</h2>
-        <p>√çcones dos presentes caem na tela conforme chegam. Visual √©pico pra live.</p>
-        <button class="play-btn">Jogar</button>
+    <div class="top-section">
+      <div class="connection-box">
+        <h3>?? Conex„o com o TikTok</h3>
+        <div class="input-group">
+          <input type="text" id="username" placeholder="Seu @ do TikTok (ex: neymarjr)">
+          <button id="connectBtn">Conectar na Live</button>
+        </div>
+        <div id="status" class="status">Status: Desconectado</div>
       </div>
     </div>
 
-    <div class="launcher-footer">
-      <a href="/dashboard/index.html" class="dashboard-link">üîß Painel de Controle</a>
+    <div class="games-section">
+      <h3>?? Escolha o Jogo (Clique para trocar na hora!)</h3>
+      <div class="games-grid">
+        <div class="game-card active" data-game="/games/pipas/">
+          <div class="game-icon">??</div>
+          <h2>Pipa Combate</h2>
+          <p>Batalha de pipas cl·ssica!</p>
+        </div>
+
+        <div class="game-card" data-game="/games/times/">
+          <div class="game-icon">?</div>
+          <h2>Futebol (Brasileir„o)</h2>
+          <p>Times disputam por gols na base da press„o.</p>
+        </div>
+
+        <div class="game-card" data-game="/games/gift-rain/">
+          <div class="game-icon">??</div>
+          <h2>Gift Rain</h2>
+          <p>Chuva de presentes visual para a tela.</p>
+        </div>
+      </div>
     </div>
+
+    <div class="settings-grid">
+      <div class="settings-box">
+        <h4>?? Volume dos Efeitos</h4>
+        <input type="range" id="vol" min="0" max="100" value="50">
+      </div>
+      
+      <div class="settings-box">
+        <h4>??? Testes R·pidos</h4>
+        <div class="test-buttons">
+          <button id="testChatBtn">?? Simular Coment·rio</button>
+          <button id="testGiftBtn">?? Simular Presente</button>
+        </div>
+      </div>
+
+      <div class="settings-box" style="grid-column: span 2;">
+        <h4>?? PosiÁ„o na Tela (Pipa)</h4>
+        <div class="test-buttons">
+          <select id="pos-leaderboard">
+            <option value="top-left">Placar: Topo Esq</option>
+            <option value="top-right">Placar: Topo Dir</option>
+            <option value="bottom-left">Placar: Baixo Esq</option>
+            <option value="bottom-right">Placar: Baixo Dir</option>
+            <option value="hidden">Placar: Oculto</option>
+          </select>
+          <select id="pos-gifts">
+            <option value="bottom-center">Guia: Baixo</option>
+            <option value="top-center">Guia: Topo</option>
+            <option value="hidden">Guia: Oculto</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="launcher.js"></script>
