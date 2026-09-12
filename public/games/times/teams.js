@@ -1,41 +1,76 @@
-// Jogo de Times - Presentes aumentam pontos do time
+const BRASILEIRAO = {
+  flamengo: { name: 'Flamengo', color: '#C52728', aliases: ['flamengo', 'mengo', 'mengao', 'fla'] },
+  corinthians: { name: 'Corinthians', color: '#ffffff', aliases: ['corinthians', 'timao', 'curingao', 'timao'] },
+  palmeiras: { name: 'Palmeiras', color: '#006437', aliases: ['palmeiras', 'verdao', 'porco'] },
+  saopaulo: { name: 'São Paulo', color: '#FE0000', aliases: ['sao paulo', 'saopaulo', 'tricolor', 'spfc'] },
+  vasco: { name: 'Vasco', color: '#FFFFFF', aliases: ['vasco', 'vascao', 'gigante'] },
+  botafogo: { name: 'Botafogo', color: '#FFFFFF', aliases: ['botafogo', 'fogao', 'estrela'] },
+  fluminense: { name: 'Fluminense', color: '#9F243A', aliases: ['fluminense', 'flu', 'nense'] },
+  gremio: { name: 'Grêmio', color: '#0D80BF', aliases: ['gremio', 'imortal', 'tricolor gaucho'] },
+  inter: { name: 'Internacional', color: '#E50000', aliases: ['internacional', 'inter', 'colorado'] },
+  cruzeiro: { name: 'Cruzeiro', color: '#003A94', aliases: ['cruzeiro', 'cabuloso', 'raposa'] },
+  atleticomg: { name: 'Atlético-MG', color: '#FFFFFF', aliases: ['atletico', 'galo', 'mineiro', 'cam'] },
+  bahia: { name: 'Bahia', color: '#0054A6', aliases: ['bahia', 'bahea', 'tricolor de aco'] },
+  vitoria: { name: 'Vitória', color: '#ED1C24', aliases: ['vitoria', 'leao'] },
+  sport: { name: 'Sport', color: '#D30A11', aliases: ['sport', 'leao da ilha'] },
+  santos: { name: 'Santos', color: '#FFFFFF', aliases: ['santos', 'peixe', 'santastico'] }
+};
 
-const teams = new Map(); // { teamName: { points, members: [], color } }
+const teams = new Map(); // { key: Team }
 const roundSeconds = 300; // 5 minutos por rodada
 let roundEndsAt = Date.now() + roundSeconds * 1000;
-let lastT = performance.now();
-
-const teamColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F'];
+const ATTACKS_FOR_GOAL = 20;
 
 class Team {
-  constructor(name, color) {
-    this.name = name;
-    this.points = 0;
-    this.color = color;
-    this.members = [];
+  constructor(key, data) {
+    this.key = key;
+    this.name = data.name;
+    this.color = data.color;
+    this.goals = 0;
+    this.attacks = 0;
+    this.members = new Set();
   }
 
-  addPoints(amount) {
-    this.points += amount;
+  addGoal(amount) {
+    this.goals += amount;
   }
 
-  addMember(userId, userName) {
-    if (!this.members.find(m => m.id === userId)) {
-      this.members.push({ id: userId, name: userName });
+  addAttack() {
+    this.attacks++;
+    if (this.attacks >= ATTACKS_FOR_GOAL) {
+      this.goals++;
+      this.attacks = 0;
     }
+  }
+
+  addMember(userId) {
+    this.members.add(userId);
   }
 }
 
-function getOrCreateTeam(teamName) {
-  if (!teams.has(teamName)) {
-    const color = teamColors[teams.size % teamColors.length];
-    teams.set(teamName, new Team(teamName, color));
+function findTeamByAlias(text) {
+  if (!text) return null;
+  const normalized = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  
+  for (const [key, data] of Object.entries(BRASILEIRAO)) {
+    for (const alias of data.aliases) {
+      if (normalized.includes(alias)) {
+        return key;
+      }
+    }
   }
-  return teams.get(teamName);
+  return null;
+}
+
+function getOrCreateTeam(key) {
+  if (!teams.has(key)) {
+    teams.set(key, new Team(key, BRASILEIRAO[key]));
+  }
+  return teams.get(key);
 }
 
 function connectWs() {
-  const ws = new WebSocket(`ws://${location.host}/ws`);
+  const ws = new WebSocket(ws:// + location.host + /ws);
 
   ws.onmessage = (msg) => {
     try {
@@ -45,19 +80,26 @@ function connectWs() {
         window.location.href = data.url;
       }
 
-      // Detecta o nome do time do comentÃ¡rio (primeira palavra)
+      // Comentário = Pressão (Ataque)
       if (data.type === 'chat') {
-        const teamName = extractTeamName(data.text) || 'Time PadrÃ£o';
-        const team = getOrCreateTeam(teamName);
-        team.addMember(data.userId, data.name);
-        team.addPoints(1);
+        const teamKey = findTeamByAlias(data.text);
+        if (teamKey) {
+          const team = getOrCreateTeam(teamKey);
+          team.addMember(data.userId);
+          team.addAttack();
+        }
       }
 
+      // Presente = Gol Direto! (1 moeda = 1 gol)
       if (data.type === 'gift') {
-        const teamName = extractTeamName(data.text) || 'Time PadrÃ£o';
-        const team = getOrCreateTeam(teamName);
-        team.addMember(data.userId, data.name);
-        team.addPoints(data.value * 10);
+        // Se a pessoa comentar o nome do time junto com o presente, a gente lê
+        const teamKey = findTeamByAlias(data.text);
+        if (teamKey) {
+          const team = getOrCreateTeam(teamKey);
+          team.addMember(data.userId);
+          // O valor do presente é em moedas. Estimando 1 rosa = 1 gol
+          team.addGoal(data.value || 1);
+        }
       }
     } catch (err) {
       console.error('[Teams WS] Erro:', err);
@@ -70,36 +112,37 @@ function connectWs() {
   };
 
   ws.onopen = () => {
-    document.getElementById('status').textContent = 'Conectado âœ…';
+    document.getElementById('status').textContent = 'Conectado à live!';
   };
-}
-
-function extractTeamName(text) {
-  if (!text) return null;
-  return text.trim().split(/\s+/)[0];
 }
 
 function renderScoreboard() {
   const sb = document.getElementById('teams-scoreboard');
-  const sorted = Array.from(teams.values()).sort((a, b) => b.points - a.points);
+  // Ordenar por gols (desc) e depois por ataques (desc)
+  const sorted = Array.from(teams.values()).sort((a, b) => {
+    if (b.goals !== a.goals) return b.goals - a.goals;
+    return b.attacks - a.attacks;
+  });
 
   sb.innerHTML = sorted
     .map((team, idx) => {
-      const pct = Math.max(sorted[0].points, 100); // normaliza pra 100 mÃ­nimo
-      const width = (team.points / pct) * 100;
-      return `
-        <div class="team-bar">
-          <div class="team-rank">${idx + 1}Âº</div>
+      const progressPct = (team.attacks / ATTACKS_FOR_GOAL) * 100;
+      return 
+        <div class="team-bar" style="border-left-color: ">
+          <div class="team-rank">º</div>
           <div class="team-info">
-            <span class="team-name">${team.name}</span>
-            <span class="team-members">${team.members.length} ${team.members.length === 1 ? 'membro' : 'membros'}</span>
+            <span class="team-name" style="color: "></span>
+            <span class="team-members"> torcedores</span>
           </div>
           <div class="team-bar-container">
-            <div class="team-bar-fill" style="width: ${width}%; background-color: ${team.color};"></div>
+            <div class="team-bar-fill" style="width: %;">PRESSÃO /</div>
           </div>
-          <div class="team-points">${team.points}</div>
+          <div class="team-goals">
+            <span class="goals-number"></span>
+            <span class="goals-label">GOLS</span>
+          </div>
         </div>
-      `;
+      ;
     })
     .join('');
 }
@@ -108,7 +151,7 @@ function renderTimer() {
   const remaining = Math.max(0, Math.round((roundEndsAt - Date.now()) / 1000));
   const m = String(Math.floor(remaining / 60)).padStart(2, '0');
   const s = String(remaining % 60).padStart(2, '0');
-  document.getElementById('timer').textContent = `${m}:${s}`;
+  document.getElementById('timer').textContent = ${m}:;
 
   if (remaining === 0) {
     announceWinner();
@@ -119,8 +162,9 @@ function renderTimer() {
 
 function announceWinner() {
   if (teams.size === 0) return;
-  const winner = Array.from(teams.values()).sort((a, b) => b.points - a.points)[0];
-  alert(`ðŸ† ${winner.name} VENCEU com ${winner.points} pontos!`);
+  const sorted = Array.from(teams.values()).sort((a, b) => b.goals - a.goals);
+  const winner = sorted[0];
+  alert(??  VENCEU A COPA TIKTOK COM  GOLS!);
 }
 
 function loop() {
