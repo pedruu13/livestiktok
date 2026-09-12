@@ -92,16 +92,27 @@ function connectWs() {
           const team = getOrCreateTeam(teamKey);
           team.addMember(data.userId);
           team.addAttack();
+          playTeamAudio(teamKey);
         }
       }
 
       // Presente = Gol Direto! (1 moeda = 1 gol)
       if (data.type === 'gift') {
-        const teamKey = findTeamByAlias(data.text);
-        if (teamKey) {
-          const team = getOrCreateTeam(teamKey);
-          team.addMember(data.userId);
-          team.addGoal(data.value || 1);
+        // Como o TikTok não manda texto no presente, precisamos descobrir de qual time o doador é!
+        // Nós olhamos em qual time o userId dele está registrado (ou seja, qual time ele comentou antes).
+        let userTeam = null;
+        for (const team of teams.values()) {
+          if (team.members.has(data.userId)) {
+            userTeam = team;
+            break;
+          }
+        }
+
+        if (userTeam) {
+          userTeam.addGoal(data.value || 1);
+          playTeamAudio(userTeam.key);
+        } else {
+          console.log('Presente recebido de alguém sem time:', data.userId);
         }
       }
     } catch (err) {
@@ -180,3 +191,26 @@ function loop() {
 
 connectWs();
 requestAnimationFrame(loop);
+// Vari�veis para controle de �udio
+const audioCache = {};
+let lastAudioTime = 0;
+const AUDIO_COOLDOWN = 3000; // Toca 1 m�sica no m�ximo a cada 3 segundos pra n�o encavalar
+
+function playTeamAudio(teamKey) {
+  const now = Date.now();
+  if (now - lastAudioTime < AUDIO_COOLDOWN) return; // Ignora se tocou agora pouco
+  
+  if (!audioCache[teamKey]) {
+    audioCache[teamKey] = new Audio(`audio/${teamKey}.mp3`);
+    audioCache[teamKey].volume = 0.5;
+  }
+  
+  const audio = audioCache[teamKey];
+  audio.currentTime = 0;
+  
+  audio.play().then(() => {
+    lastAudioTime = Date.now();
+  }).catch(() => {
+    // Arquivo n�o existe ou navegador bloqueou, n�o faz nada
+  });
+}

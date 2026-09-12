@@ -148,7 +148,7 @@ html, body {
   color: #fff;
 }
 
-#teams-instructions {
+#instructions {
   text-align: center;
   padding: 15px;
   background: rgba(0, 0, 0, 0.6);
@@ -157,7 +157,7 @@ html, body {
   border: 1px solid rgba(255,255,255,0.2);
 }
 
-#teams-instructions p {
+#instructions p {
   font-size: 18px;
   margin: 5px 0;
   font-weight: 600;
