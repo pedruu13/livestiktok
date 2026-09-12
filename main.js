@@ -94,6 +94,15 @@ ipcMain.on('start-connection', async (event, username) => {
 });
 
 
+ipcMain.on('change-game', (event, url) => {
+  if (gameWindow) {
+    gameWindow.loadURL(`http://localhost:3001${url}`);
+  }
+  if (broadcastFunc) {
+    broadcastFunc({ type: 'change-game', url });
+  }
+});
+
 ipcMain.on('overlay-config', (event, data) => {
   if (broadcastFunc) broadcastFunc({ type: 'config', ...data });
 });

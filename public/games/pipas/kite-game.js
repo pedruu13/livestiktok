@@ -1186,6 +1186,10 @@ function connectWs() {
   ws.onmessage = (msg) => {
     const data = JSON.parse(msg.data);
 
+    if (data.type === 'change-game') {
+      window.location.href = data.url;
+    }
+
     if (data.type === 'volume') {
       sfxSpawn.volume = data.value * 0.6;
       sfxCut.volume = data.value;

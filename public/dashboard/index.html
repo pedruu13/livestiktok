@@ -80,9 +80,18 @@
 </head>
 <body>
   <div class="container">
-    <h2>🪁 Pipa Combate LIVE</h2>
+    <h2>🎮 Pipa Combate LIVE</h2>
     
     <div class="box">
+      <label>Selecione o Jogo Atual:</label>
+      <select id="game-selector" style="padding: 12px; width: 100%; background: #0f172a; color: white; border: 1px solid #475569; border-radius: 8px; margin-bottom: 15px; font-size: 16px;">
+        <option value="/games/pipas/">🪁 Pipa Combate</option>
+        <option value="/games/times/">⚔️ Jogo de Times</option>
+        <option value="/games/gift-rain/">🎁 Gift Rain</option>
+      </select>
+      <button id="changeGameBtn" style="margin-bottom: 15px; background: linear-gradient(90deg, #3b82f6, #2563eb);">Aplicar Jogo (Muda no OBS)</button>
+      <hr style="border-top: 1px solid #334155; margin-bottom: 15px;">
+      
       <label>Seu @ do TikTok:</label>
       <input type="text" id="username" placeholder="ex: neymarjr">
       <button id="connectBtn">Conectar na Live</button>
@@ -125,6 +134,11 @@
   </div>
 
   <script>
+    document.getElementById('changeGameBtn').addEventListener('click', () => {
+      const gameUrl = document.getElementById('game-selector').value;
+      window.tiktokKite.changeGame(gameUrl);
+    });
+
     document.getElementById('connectBtn').addEventListener('click', () => {
       const user = document.getElementById('username').value.trim();
       if(!user) return alert('Por favor, digite seu usuário do TikTok!');

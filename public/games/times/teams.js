@@ -41,6 +41,10 @@ function connectWs() {
     try {
       const data = JSON.parse(msg.data);
 
+      if (data.type === 'change-game') {
+        window.location.href = data.url;
+      }
+
       // Detecta o nome do time do comentário (primeira palavra)
       if (data.type === 'chat') {
         const teamName = extractTeamName(data.text) || 'Time Padrão';

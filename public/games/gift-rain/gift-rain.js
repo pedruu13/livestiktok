@@ -77,6 +77,10 @@ function connectWs() {
     try {
       const data = JSON.parse(msg.data);
 
+      if (data.type === 'change-game') {
+        window.location.href = data.url;
+      }
+
       if (data.type === 'gift') {
         const emoji = Object.values(giftEmojis)[Math.floor(Math.random() * Object.keys(giftEmojis).length)];
         const multiplier = estimateMultiplier(data.value);
