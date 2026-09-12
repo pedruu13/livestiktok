@@ -1,0 +1,75 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: transparent;
+  overflow: hidden;
+}
+
+#gift-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.1) 100%);
+}
+
+#back-button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
+}
+
+#back-button a {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #333;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+#back-button a:hover {
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+#gift-stats {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 15px 25px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-weight: 600;
+  color: #333;
+  z-index: 100;
+}
+
+#total-gifts {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+#total-value {
+  font-size: 18px;
+  color: #ffd700;
+}
+
+/* Modo transparente pra usar como overlay de verdade no OBS */
+@media (prefers-color-scheme: dark) {
+  #gift-canvas {
+    background: transparent;
+  }
+}

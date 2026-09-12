@@ -23,12 +23,12 @@ function createWindow() {
       contextIsolation: true
     }
   });
-  mainWindow.loadFile('dashboard/index.html');
+  mainWindow.loadFile('public/dashboard/index.html');
 }
 
 app.whenReady().then(() => {
   // Inicia o Servidor Local Overlay (OBS)
-  expressApp.use(express.static(path.join(__dirname, 'overlay')));
+  expressApp.use(express.static(path.join(__dirname, 'public')));
   
   httpServer = expressApp.listen(3001, () => {
     console.log('[App] Overlay rodando em http://localhost:3001');
