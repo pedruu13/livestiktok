@@ -30,7 +30,7 @@ function createWindow() {
     mainWindow.show();
   });
 
-  mainWindow.loadFile('public/index.html');
+  mainWindow.loadURL('http://localhost:3001');
 }
 
 app.whenReady().then(() => {
