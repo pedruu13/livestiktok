@@ -15,9 +15,9 @@ const audioPunch = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/
 // Estado
 let hpBolso = 100;
 let hpLula = 100;
-let hitsBolso = 0; // Comentários pro Bolsonaro
-let hitsLula = 0;  // Comentários pro Lula
-const HITS_PER_PERCENT = 10;
+let hitsBolso = 0;
+let hitsLula = 0;
+const HITS_PER_PERCENT = 5;
 let isGameOver = false;
 
 // Conexão WebSockets
@@ -38,15 +38,32 @@ ws.onmessage = (event) => {
   const data = JSON.parse(event.data);
 
   if (data.type === 'chat') {
-    handleChat(data.comment.toLowerCase());
+    const chatText = data.comment || data.text || data.msg || "mito"; // Fallback para "mito" no teste
+    handleChat(chatText.toLowerCase());
   } else if (data.type === 'gift') {
     handleGift(data.giftName, data.diamondCount || data.value || 1);
   }
 };
 
+function createFloatingText(charClass, text) {
+  const el = document.createElement('div');
+  el.className = 'floating-text';
+  el.textContent = text;
+  document.body.appendChild(el);
+  
+  // Posiciona baseado no personagem
+  const charEl = document.querySelector('.' + charClass);
+  const rect = charEl.getBoundingClientRect();
+  el.style.left = (rect.left + rect.width / 2) + 'px';
+  el.style.top = (rect.top + 100) + 'px';
+  
+  setTimeout(() => el.remove(), 1000);
+}
+
 function handleChat(text) {
   if (text.includes('mito') || text.includes('22') || text.includes('bolsonaro')) {
     hitsBolso++;
+    createFloatingText('left-char', `Mito! ${hitsBolso}/${HITS_PER_PERCENT}`);
     if (hitsBolso >= HITS_PER_PERCENT) {
       hitsBolso = 0;
       doDamage('lula', 1);
@@ -54,6 +71,7 @@ function handleChat(text) {
     }
   } else if (text.includes('lula') || text.includes('13') || text.includes('faz o l')) {
     hitsLula++;
+    createFloatingText('right-char', `Lula! ${hitsLula}/${HITS_PER_PERCENT}`);
     if (hitsLula >= HITS_PER_PERCENT) {
       hitsLula = 0;
       doDamage('bolso', 1);
