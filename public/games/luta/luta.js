@@ -17,7 +17,7 @@ let hpBolso = 100;
 let hpLula = 100;
 let hitsBolso = 0;
 let hitsLula = 0;
-const HITS_PER_PERCENT = 5;
+const HITS_PER_PERCENT = 1;
 let isGameOver = false;
 
 // ConexÃ£o WebSockets
@@ -65,18 +65,18 @@ function createFloatingText(charClass, text) {
 function handleChat(text) {
   if (text.includes('mito') || text.includes('22') || text.includes('bolsonaro')) {
     hitsBolso++;
-    createFloatingText('left-char', `Mito! ${hitsBolso}/${HITS_PER_PERCENT}`);
+    createFloatingText('left-char', 'Mito! 👊');
     if (hitsBolso >= HITS_PER_PERCENT) {
       hitsBolso = 0;
-      doDamage('lula', 1);
+      doDamage('lula', 0.2);
       animateAttack('bolso');
     }
   } else if (text.includes('lula') || text.includes('13') || text.includes('faz o l')) {
     hitsLula++;
-    createFloatingText('right-char', `Lula! ${hitsLula}/${HITS_PER_PERCENT}`);
+    createFloatingText('right-char', 'Lula! 👊');
     if (hitsLula >= HITS_PER_PERCENT) {
       hitsLula = 0;
-      doDamage('bolso', 1);
+      doDamage('bolso', 0.2);
       animateAttack('lula');
     }
   }
@@ -132,11 +132,11 @@ function doDamage(targetId, amount) {
   if (targetId === 'bolso') {
     hpBolso = Math.max(0, hpBolso - amount);
     hpBolsoEl.style.width = hpBolso + '%';
-    pctBolsoEl.textContent = hpBolso + '%';
+    pctBolsoEl.textContent = Math.ceil(hpBolso) + '%';
   } else {
     hpLula = Math.max(0, hpLula - amount);
     hpLulaEl.style.width = hpLula + '%';
-    pctLulaEl.textContent = hpLula + '%';
+    pctLulaEl.textContent = Math.ceil(hpLula) + '%';
   }
 
   checkWin();
@@ -221,9 +221,11 @@ function updateHP() {
   const pctBolsoEl = document.getElementById('pct-bolso');
   const pctLulaEl = document.getElementById('pct-lula');
   hpBolsoEl.style.width = hpBolso + '%';
-  pctBolsoEl.textContent = hpBolso + '%';
+  pctBolsoEl.textContent = Math.ceil(hpBolso) + '%';
   hpLulaEl.style.width = hpLula + '%';
-  pctLulaEl.textContent = hpLula + '%';
+  pctLulaEl.textContent = Math.ceil(hpLula) + '%';
 }
+
+
 
 
