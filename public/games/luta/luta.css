@@ -31,7 +31,6 @@ body {
   background-image: url('assets/bg_mockup.jpg');
   background-size: cover;
   background-position: center;
-  filter: brightness(0.6) blur(2px);
   z-index: 1;
 }
 
@@ -64,44 +63,41 @@ body {
 }
 
 .fighter-name {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 900;
-  text-transform: uppercase;
-  text-shadow: 2px 2px 0px #000;
+  text-shadow: 2px 2px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 0 4px 10px rgba(0,0,0,0.8);
+  letter-spacing: 2px;
+  margin-bottom: 5px;
 }
 
 .hp-bar-bg {
   width: 100%;
-  height: 35px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 3px solid #fff;
-  border-radius: 8px;
+  height: 40px;
+  background-color: #333;
+  border: 4px solid #fff;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.8);
   overflow: hidden;
   position: relative;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.5);
 }
 
 .hp-bar-fill {
   height: 100%;
   width: 100%;
-  transition: width 0.2s ease-out;
-}
-
-#hp-bolso {
-  background: linear-gradient(90deg, #10b981, #34d399); /* Verde Brasil */
-  transform-origin: left;
+  background: linear-gradient(90deg, #22c55e, #10b981);
+  transition: width 0.3s ease-out;
 }
 
 #hp-lula {
-  background: linear-gradient(270deg, #ef4444, #f87171); /* Vermelho PT */
-  float: right; /* Preenche da direita pra esquerda */
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+  float: right;
 }
 
 .hp-pct {
-  font-size: 20px;
-  font-weight: 900;
-  text-shadow: 2px 2px 0px #000;
-  margin-top: -5px;
+  font-size: 24px;
+  font-weight: 700;
+  text-shadow: 1px 1px 2px black;
+  margin-top: 5px;
 }
 
 #vs-logo {
@@ -112,24 +108,22 @@ body {
   text-shadow: 3px 3px 0px #000;
 }
 
-/* ARENA & PERSONAGENS */
+/* Arena */
 #arena {
   position: absolute;
-  bottom: 10%;
+  bottom: -20px;
   left: 0;
   width: 100%;
   height: 60%;
-  z-index: 5;
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: 50px;
+  gap: 10px;
+  z-index: 5;
 }
 
 .character {
-  width: 600px; /* Largura suficiente para o soco */
-  height: 650px; /* Altura massiva */
-  background-size: auto 100%; /* Força a imagem a ter 100% da altura do container */
+  background-size: contain; 
   background-repeat: no-repeat;
   background-position: center bottom;
   transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -138,10 +132,14 @@ body {
 
 .left-char {
   background-image: url('assets/bolso_cropped.png');
+  width: 700px;
+  height: 650px;
 }
 
 .right-char {
   background-image: url('assets/lula_cropped.png');
+  width: 500px;
+  height: 550px;
 }
 
 

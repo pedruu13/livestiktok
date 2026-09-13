@@ -40,7 +40,7 @@ ws.onmessage = (event) => {
   if (data.type === 'chat') {
     handleChat(data.comment.toLowerCase());
   } else if (data.type === 'gift') {
-    handleGift(data.giftName, data.diamondCount);
+    handleGift(data.giftName, data.diamondCount || data.value || 1);
   }
 };
 
