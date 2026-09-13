@@ -129,18 +129,20 @@ body {
 
 .left-char {
   background-image: url('assets/bolso_cropped.png');
-  /* Aspect Ratio: 1.073 (mais largo que alto devido ao soco) */
-  height: 600px;
-  width: 644px;
-  left: -200px; /* Empurra pra esquerda pra centralizar o corpo na tela */
+  /* Altura ideal para caber: 480px */
+  height: 480px;
+  width: 515px; /* Mantém a proporção 1.073 */
+  left: -80px; /* Corta só um pouquinho das costas */
+  z-index: 3; /* Fica na frente no modo neutro para o soco aparecer */
 }
 
 .right-char {
   background-image: url('assets/lula_cropped.png');
-  /* Aspect Ratio: 0.947 */
-  height: 560px;
-  width: 530px;
-  right: -150px; /* Empurra pra direita */
+  /* Altura 450px para equiparar a cabeça com o Bolso */
+  height: 450px;
+  width: 426px; /* Proporção 0.947 */
+  right: -50px;
+  z-index: 2;
 }
 
 
