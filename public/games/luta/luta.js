@@ -1,4 +1,4 @@
-const statusEl = document.getElementById('status');
+﻿const statusEl = document.getElementById('status');
 const bolsoChar = document.getElementById('bolso-char');
 const lulaChar = document.getElementById('lula-char');
 const hpBolsoEl = document.getElementById('hp-bolso');
@@ -20,7 +20,7 @@ let hitsLula = 0;
 const HITS_PER_PERCENT = 5;
 let isGameOver = false;
 
-// Conexão WebSockets
+// ConexÃ£o WebSockets
 const ws = new WebSocket('ws://' + location.host + '/ws');
 
 ws.onopen = () => {
@@ -85,18 +85,18 @@ function handleChat(text) {
 function handleGift(giftName, diamonds) {
   // Presentes = Dano Direto Esmagador (Especial)
   // Cada 1 diamante tira 1% de HP (ou podemos ajustar)
-  // Como presentes são raros e caros, 1 diamante = 1% é muito forte (ex: rosa = 1%).
-  // Vamos fazer: 1 presente = dano aleatório de 10% a 20% para ficar emocionante.
+  // Como presentes sÃ£o raros e caros, 1 diamante = 1% Ã© muito forte (ex: rosa = 1%).
+  // Vamos fazer: 1 presente = dano aleatÃ³rio de 10% a 20% para ficar emocionante.
   
-  // Quem ganhou o presente? O último que atacou mais ganha o bônus, ou o dono da live decide.
-  // Vamos sortear ou basear no "time" atual do usuário?
-  // Na ausência de times rígidos como no futebol, o presente pode curar quem tá perdendo ou atacar aleatoriamente.
-  // Vamos fazer com que o presente cause um SUPER DANO no que estiver ganhando (Mecânica de reviravolta).
+  // Quem ganhou o presente? O Ãºltimo que atacou mais ganha o bÃ´nus, ou o dono da live decide.
+  // Vamos sortear ou basear no "time" atual do usuÃ¡rio?
+  // Na ausÃªncia de times rÃ­gidos como no futebol, o presente pode curar quem tÃ¡ perdendo ou atacar aleatoriamente.
+  // Vamos fazer com que o presente cause um SUPER DANO no que estiver ganhando (MecÃ¢nica de reviravolta).
   
   const target = hpBolso > hpLula ? 'bolso' : 'lula';
   const attacker = target === 'bolso' ? 'lula' : 'bolso';
   
-  const damage = Math.min(25, diamonds * 2); // Cap em 25% por presente para não acabar instantaneamente
+  const damage = Math.min(25, diamonds * 2); // Cap em 25% por presente para nÃ£o acabar instantaneamente
   
   doDamage(target, damage);
   animateAttack(attacker, true);
@@ -160,7 +160,7 @@ function announceWinner(winnerName) {
   setTimeout(() => {
     modal.classList.add('hidden');
     resetGame();
-  }, 8000);
+  }, 3000);
 }
 
 function resetGame() {
@@ -179,17 +179,17 @@ function resetGame() {
 }
 
 let likePoints = 0;
-const LIKES_FOR_HEAL = 25; // A cada 25 curtidas (taps), cura quem est� perdendo
+const LIKES_FOR_HEAL = 25; // A cada 25 curtidas (taps), cura quem está perdendo
 
 function handleLike(count) {
   likePoints += count;
   
-  // Efeito visual bonitinho de cora��o gen�rico na tela
+  // Efeito visual bonitinho de coração genérico na tela
   const arena = document.getElementById('arena');
   const heart = document.createElement('div');
   heart.className = 'floating-text';
   heart.textContent = '??';
-  // Posi��o aleat�ria na tela
+  // Posição aleatória na tela
   heart.style.left = (20 + Math.random() * 60) + '%';
   heart.style.top = (30 + Math.random() * 40) + '%';
   arena.appendChild(heart);
@@ -197,7 +197,7 @@ function handleLike(count) {
 
   if (likePoints >= LIKES_FOR_HEAL) {
     likePoints = 0;
-    // Cura quem est� perdendo para equilibrar a partida (a For�a do Povo!)
+    // Cura quem está perdendo para equilibrar a partida (a Força do Povo!)
     if (hpLula < hpBolso && hpLula < 100) {
       hpLula = Math.min(100, hpLula + 2); // Cura 2%
       createFloatingText('right-char', '?? +2% Cura!');
@@ -225,3 +225,4 @@ function updateHP() {
   hpLulaEl.style.width = hpLula + '%';
   pctLulaEl.textContent = hpLula + '%';
 }
+
