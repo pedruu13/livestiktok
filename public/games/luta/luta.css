@@ -127,23 +127,21 @@ body {
 }
 
 .character {
-  width: 150px;
-  height: 250px;
-  background-size: 1100% 400%; /* São 11 colunas e 4 linhas na sprite */
+  width: 200px;
+  height: 350px;
+  background-size: 1100% 400%; 
   background-position: 0 0;
   transition: transform 0.1s ease-in-out;
-  /* Estilo Carta / Retrato para esconder o fundo artificialmente */
-  border: 3px solid #facc15;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+  /* Sem fundo cinza agora, apenas o boneco puro! */
+  filter: contrast(1.1) drop-shadow(0px 10px 10px rgba(0,0,0,0.8));
 }
 
 .left-char {
-  background-image: url('assets/bolso_sprites.png');
+  background-image: url('assets/bolso_clean.png');
 }
 
 .right-char {
-  background-image: url('assets/lula_sprites.png');
+  background-image: url('assets/lula_clean.png');
   transform: scaleX(-1); 
 }
 
