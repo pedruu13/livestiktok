@@ -1,4 +1,4 @@
-﻿const statusEl = document.getElementById('status');
+const statusEl = document.getElementById('status');
 const bolsoChar = document.getElementById('bolso-char');
 const lulaChar = document.getElementById('lula-char');
 const hpBolsoEl = document.getElementById('hp-bolso');
@@ -104,7 +104,7 @@ function animateAttack(attackerId, isSpecial = false) {
       targetEl.classList.remove('hit');
       gameContainer.classList.remove('shake-screen');
       hitFx.classList.add('hidden');
-    }, 200);
+    }, 350);
   }, 100);
 }
 

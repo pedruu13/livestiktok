@@ -127,41 +127,44 @@ body {
 }
 
 .character {
-  width: 700px;
-  height: 900px;
-  background-size: contain;
+  width: 600px; /* Largura suficiente para o soco */
+  height: 650px; /* Altura massiva */
+  background-size: auto 100%; /* Força a imagem a ter 100% da altura do container */
   background-repeat: no-repeat;
   background-position: center bottom;
-  transition: transform 0.1s ease-in-out;
-  filter: contrast(1.1) drop-shadow(0px 15px 10px rgba(0,0,0,0.5));
+  transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  filter: contrast(1.1) drop-shadow(0px 20px 15px rgba(0,0,0,0.6));
 }
 
 .left-char {
-  background-image: url('assets/bolso_clean.png');
+  background-image: url('assets/bolso_cropped.png');
 }
 
 .right-char {
-  background-image: url('assets/lula_clean.png');
+  background-image: url('assets/lula_cropped.png');
 }
 
 
 
-/* Animações */
+/* Animações de Bater */
 .attacking.left-char {
-  transform: translateX(120px) rotate(5deg) scale(1.05);
+  transform: translateX(200px) rotate(10deg) scale(1.1);
+  z-index: 10;
 }
 
 .attacking.right-char {
-  transform: translateX(-120px) rotate(-5deg) scale(1.05);
+  transform: translateX(-200px) rotate(-10deg) scale(1.1);
+  z-index: 10;
 }
 
+/* Animações de Apanhar */
 .hit {
-  filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5);
-  transform: translateX(-30px) !important;
+  filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(10) drop-shadow(0 0 20px red) !important;
+  transform: translateX(-50px) rotate(-15deg) scaleY(0.9) !important;
 }
 
 .hit.right-char {
-  transform: translateX(20px) !important;
+  transform: translateX(50px) rotate(15deg) scaleY(0.9) !important;
 }
 
 /* Efeito de Dano */
