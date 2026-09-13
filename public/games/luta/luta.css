@@ -129,19 +129,17 @@ body {
 
 .left-char {
   background-image: url('assets/bolso_cropped.png');
-  /* Altura ideal para caber: 480px */
-  height: 480px;
-  width: 515px; /* Mantém a proporção 1.073 */
-  left: -80px; /* Corta só um pouquinho das costas */
-  z-index: 3; /* Fica na frente no modo neutro para o soco aparecer */
+  height: 400px;
+  width: 429px; 
+  left: -90px; /* Corta só o cantinho das costas */
+  z-index: 3; /* Punho do Bolso fica na frente */
 }
 
 .right-char {
   background-image: url('assets/lula_cropped.png');
-  /* Altura 450px para equiparar a cabeça com o Bolso */
-  height: 450px;
-  width: 426px; /* Proporção 0.947 */
-  right: -50px;
+  height: 400px;
+  width: 378px; 
+  right: -60px;
   z-index: 2;
 }
 
