@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap');
 
 * {
   margin: 0;
@@ -127,8 +127,8 @@ body {
 }
 
 .character {
-  width: 550px;
-  height: 750px;
+  width: 700px;
+  height: 900px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
@@ -146,20 +146,18 @@ body {
 
 
 
-/* AnimaÃ§Ãµes */
+/* Animações */
 .attacking.left-char {
-  background-image: url('assets/bolso_punch.png');
-  transform: translateX(100px) rotate(5deg);
+  transform: translateX(120px) rotate(5deg) scale(1.05);
 }
 
 .attacking.right-char {
-  background-image: url('assets/lula_punch.png');
-  transform: translateX(-100px) rotate(-5deg);
+  transform: translateX(-120px) rotate(-5deg) scale(1.05);
 }
 
 .hit {
   filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5);
-  transform: translateX(-20px) !important;
+  transform: translateX(-30px) !important;
 }
 
 .hit.right-char {
