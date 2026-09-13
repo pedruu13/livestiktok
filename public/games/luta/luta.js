@@ -160,7 +160,7 @@ function announceWinner(winnerName) {
   setTimeout(() => {
     modal.classList.add('hidden');
     resetGame();
-  }, 3000);
+  }, 8000);
 }
 
 function resetGame() {
@@ -225,4 +225,5 @@ function updateHP() {
   hpLulaEl.style.width = hpLula + '%';
   pctLulaEl.textContent = hpLula + '%';
 }
+
 
