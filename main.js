@@ -62,18 +62,8 @@ ipcMain.on('start-connection', async (event, data) => {
     currentTiktokConnection = connection;
     const { emitter: tiktokEvents, promise: connectionPromise } = connection;
     
-    await connectionPromise; // TRAVA DE SEGURANÇA: ESPERA CONECTAR DE VERDADE
-    
-    tiktokEvents.on('chat', (data) => broadcastFunc && broadcastFunc({ type: 'chat', ...data }));
-    tiktokEvents.on('gift', (data) => broadcastFunc && broadcastFunc({ type: 'gift', ...data }));
-    tiktokEvents.on('join', (data) => broadcastFunc && broadcastFunc({ type: 'join', ...data }));
-    
-    event.reply('connection-status', { 
-      success: true, 
-      msg: `SUCESSO! Conectado na live de @${username}!` 
-    });
-
-    // Abre a janela do jogo automaticamente!
+    // Abre a janela do jogo independentemente de a live estar online
+    // Isso é essencial para testes offline.
     if (!gameWindow) {
       gameWindow = new BrowserWindow({
         width: 540,
@@ -83,7 +73,7 @@ ipcMain.on('start-connection', async (event, data) => {
         autoHideMenuBar: true,
         backgroundColor: '#000000', // <-- EVITA A TELA BRANCA INICIAL
         show: false, // Só mostra depois que carregar
-        title: "Pipa Combate - Tela do Jogo (Ao Vivo)",
+        title: "Pipa Combate - Tela do Jogo",
         webPreferences: {
           autoplayPolicy: 'no-user-gesture-required'
         }
@@ -100,6 +90,17 @@ ipcMain.on('start-connection', async (event, data) => {
     
     // Sempre carrega o jogo selecionado
     gameWindow.loadURL(`http://localhost:3001${gameUrl || '/games/pipas/'}`);
+
+    await connectionPromise; // ESPERA CONECTAR DE VERDADE NO TIKTOK
+    
+    tiktokEvents.on('chat', (data) => broadcastFunc && broadcastFunc({ type: 'chat', ...data }));
+    tiktokEvents.on('gift', (data) => broadcastFunc && broadcastFunc({ type: 'gift', ...data }));
+    tiktokEvents.on('join', (data) => broadcastFunc && broadcastFunc({ type: 'join', ...data }));
+    
+    event.reply('connection-status', { 
+      success: true, 
+      msg: `SUCESSO! Conectado na live de @${username}!` 
+    });
 
   } catch (err) {
     event.reply('connection-status', { 
