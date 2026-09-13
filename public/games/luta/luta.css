@@ -144,56 +144,7 @@ body {
   background-image: url('assets/lula_clean.png');
 }
 
-/* Torcida e Banners (Agora faixas penduradas do topo) */
-.torcida {
-  position: absolute;
-  top: -10px;
-  display: flex;
-  flex-direction: row;
-  gap: 15px;
-  opacity: 0.95;
-  z-index: 1;
-}
 
-.torcida-esquerda {
-  left: 20px;
-}
-
-.torcida-direita {
-  right: 20px;
-}
-
-.banner {
-  background-color: #16a34a; /* Verde mais escuro pra parecer tecido */
-  color: white;
-  padding: 30px 10px 40px 10px;
-  font-size: 26px;
-  font-weight: 900;
-  text-transform: uppercase;
-  /* Formato de Bandeira/Faixa vertical com corte em V embaixo */
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 90%, 0 100%);
-  /* Texto de cima pra baixo */
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  letter-spacing: 5px;
-  box-shadow: 0px 10px 10px rgba(0,0,0,0.5); /* Sombra simples */
-  /* AnimaÃ§Ã£o suave de balanÃ§o de vento */
-  transform-origin: top center;
-  animation: balanco 3s infinite alternate ease-in-out;
-}
-
-.torcida-direita .banner {
-  animation: balanco 3.5s infinite alternate-reverse ease-in-out;
-}
-
-.banner.bg-red {
-  background-color: #dc2626; 
-}
-
-@keyframes balanco {
-  0% { transform: rotate(-3deg); }
-  100% { transform: rotate(3deg); }
-}
 
 /* AnimaÃ§Ãµes */
 .attacking.left-char {
@@ -295,4 +246,5 @@ body {
 .shake-screen {
   animation: shake 0.3s;
 }
+
 
