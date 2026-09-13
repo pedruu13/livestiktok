@@ -127,31 +127,31 @@ body {
 }
 
 .character {
-  width: 250px;
-  height: 400px;
+  width: 400px;
+  height: 550px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
   transition: transform 0.1s ease-in-out;
-  /* Multiplicar faz o fundo branco das novas imagens sumir 100% no cenário */
-  mix-blend-mode: multiply;
-  filter: contrast(1.1);
+  filter: contrast(1.1) drop-shadow(0px 15px 10px rgba(0,0,0,0.5));
 }
 
 .left-char {
-  background-image: url('assets/bolso_clean.jpg');
+  background-image: url('assets/bolso_clean.png');
 }
 
 .right-char {
-  background-image: url('assets/lula_clean.jpg');
+  background-image: url('assets/lula_clean.png');
 }
 
 /* Animações */
 .attacking.left-char {
+  background-image: url('assets/bolso_punch.png');
   transform: translateX(100px) rotate(5deg);
 }
 
 .attacking.right-char {
+  background-image: url('assets/lula_punch.png');
   transform: translateX(-100px) rotate(-5deg);
 }
 
@@ -243,4 +243,51 @@ body {
 }
 .shake-screen {
   animation: shake 0.3s;
+}
+/* Torcida e Banners */
+.torcida {
+  position: absolute;
+  bottom: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  opacity: 0.8;
+  z-index: 1;
+}
+
+.torcida-esquerda {
+  left: 50px;
+  animation: bounce 2s infinite alternate ease-in-out;
+}
+
+.torcida-direita {
+  right: 50px;
+  animation: bounce 2.2s infinite alternate-reverse ease-in-out;
+}
+
+.banner {
+  background-color: #22c55e; /* Verde Bolso */
+  color: white;
+  padding: 10px 20px;
+  font-size: 24px;
+  font-weight: 900;
+  border-radius: 5px;
+  border: 3px solid white;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transform: rotate(-5deg);
+}
+
+.torcida-direita .banner {
+  transform: rotate(5deg);
+}
+
+.banner.bg-red {
+  background-color: #ef4444; /* Vermelho Lula */
+}
+
+@keyframes bounce {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-20px); }
 }
