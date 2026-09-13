@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap');
 
 * {
   margin: 0;
@@ -127,15 +127,15 @@ body {
 }
 
 .character {
-  width: 250px;
-  height: 400px;
-  background-size: 600% 400%; /* Estimativa de colunas e linhas da spritesheet */
+  width: 150px;
+  height: 250px;
+  background-size: 1100% 400%; /* São 11 colunas e 4 linhas na sprite */
   background-position: 0 0;
   transition: transform 0.1s ease-in-out;
-  /* Remover fundo cinza do grid se houver escurecendo-o: mix-blend-mode: multiply; */
-  /* Vamos manter normal por enquanto. Se ficar um quadrado cinza, o mix-blend-mode resolve */
-  mix-blend-mode: multiply;
-  filter: contrast(1.2);
+  /* Estilo Carta / Retrato para esconder o fundo artificialmente */
+  border: 3px solid #facc15;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.8);
 }
 
 .left-char {
@@ -144,20 +144,17 @@ body {
 
 .right-char {
   background-image: url('assets/lula_sprites.png');
-  transform: scaleX(-1); /* Virar para a esquerda se necessário, mas eles já estão virados? A spritesheet do Lula já está pra direita, precisamos virar pra ele olhar pro Bolso */
-}
-.right-char.normal-facing {
-  transform: scaleX(-1);
+  transform: scaleX(-1); 
 }
 
-/* Animações (Paper Puppet) */
+/* Animações */
 .attacking.left-char {
-  background-position: 20% 40%; /* Frame de chute/soco aproximado */
+  background-position: 10% 40%; /* Frame de soco aproximado */
   transform: translateX(100px) rotate(5deg);
 }
 
 .attacking.right-char {
-  background-position: 20% 40%; 
+  background-position: 10% 40%; 
   transform: scaleX(-1) translateX(100px) rotate(-5deg);
 }
 
