@@ -42,6 +42,8 @@ ws.onmessage = (event) => {
     handleChat(chatText.toLowerCase());
   } else if (data.type === 'gift') {
     handleGift(data.giftName, data.diamondCount || data.value || 1);
+  } else if (data.type === 'like') {
+    handleLike(data.likeCount || 1);
   }
 };
 
@@ -174,4 +176,52 @@ function resetGame() {
   pctLulaEl.textContent = '100%';
   
   isGameOver = false;
+}
+
+let likePoints = 0;
+const LIKES_FOR_HEAL = 25; // A cada 25 curtidas (taps), cura quem está perdendo
+
+function handleLike(count) {
+  likePoints += count;
+  
+  // Efeito visual bonitinho de coração genérico na tela
+  const arena = document.getElementById('arena');
+  const heart = document.createElement('div');
+  heart.className = 'floating-text';
+  heart.textContent = '??';
+  // Posição aleatória na tela
+  heart.style.left = (20 + Math.random() * 60) + '%';
+  heart.style.top = (30 + Math.random() * 40) + '%';
+  arena.appendChild(heart);
+  setTimeout(() => heart.remove(), 1000);
+
+  if (likePoints >= LIKES_FOR_HEAL) {
+    likePoints = 0;
+    // Cura quem está perdendo para equilibrar a partida (a Força do Povo!)
+    if (hpLula < hpBolso && hpLula < 100) {
+      hpLula = Math.min(100, hpLula + 2); // Cura 2%
+      createFloatingText('right-char', '?? +2% Cura!');
+      updateHP();
+    } else if (hpBolso < hpLula && hpBolso < 100) {
+      hpBolso = Math.min(100, hpBolso + 2); // Cura 2%
+      createFloatingText('left-char', '?? +2% Cura!');
+      updateHP();
+    } else {
+      // Se tiverem empatados, cura os dois em 1%
+      if (hpBolso < 100) hpBolso += 1;
+      if (hpLula < 100) hpLula += 1;
+      updateHP();
+    }
+  }
+}
+
+function updateHP() {
+  const hpBolsoEl = document.getElementById('hp-bolso');
+  const hpLulaEl = document.getElementById('hp-lula');
+  const pctBolsoEl = document.getElementById('pct-bolso');
+  const pctLulaEl = document.getElementById('pct-lula');
+  hpBolsoEl.style.width = hpBolso + '%';
+  pctBolsoEl.textContent = hpBolso + '%';
+  hpLulaEl.style.width = hpLula + '%';
+  pctLulaEl.textContent = hpLula + '%';
 }

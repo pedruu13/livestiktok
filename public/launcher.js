@@ -1,4 +1,4 @@
-﻿let currentGame = '/games/pipas/';
+let currentGame = '/games/pipas/';
 
 // Seleção de jogo via clique nos cards
 document.querySelectorAll('.game-card').forEach((card) => {
@@ -52,6 +52,7 @@ if (window.tiktokKite) {
   });
 
   document.getElementById('testChatBtn').addEventListener('click', () => window.tiktokKite.sendTestEvent('chat'));
+  document.getElementById('testLikeBtn').addEventListener('click', () => window.tiktokKite.sendTestEvent('like'));
   document.getElementById('testGiftBtn').addEventListener('click', () => window.tiktokKite.sendTestEvent('gift'));
 
   document.getElementById('pos-leaderboard').addEventListener('change', (e) => {

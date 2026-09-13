@@ -96,6 +96,7 @@ ipcMain.on('start-connection', async (event, data) => {
     tiktokEvents.on('chat', (data) => broadcastFunc && broadcastFunc({ type: 'chat', ...data }));
     tiktokEvents.on('gift', (data) => broadcastFunc && broadcastFunc({ type: 'gift', ...data }));
     tiktokEvents.on('join', (data) => broadcastFunc && broadcastFunc({ type: 'join', ...data }));
+    tiktokEvents.on('like', (data) => broadcastFunc && broadcastFunc({ type: 'like', ...data }));
     
     event.reply('connection-status', { 
       success: true, 
@@ -137,6 +138,8 @@ ipcMain.on('test-event', (event, type) => {
     broadcastFunc({ type: 'chat', userId: 'bot_'+rand, name: 'Espectador '+rand, avatarUrl: '' });
   } else if (type === 'gift') {
     broadcastFunc({ type: 'gift', userId: 'rico_'+rand, name: 'Apoiador VIP', value: 50, avatarUrl: '' });
+  } else if (type === 'like') {
+    broadcastFunc({ type: 'like', userId: 'fan_'+rand, name: 'Espectador '+rand, likeCount: 5, avatarUrl: '' });
   }
 });
 
