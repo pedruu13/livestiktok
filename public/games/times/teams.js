@@ -209,17 +209,17 @@ function announceWinner() {
   desc.textContent = `Com ${winner.goals} GOLS e ${winner.attacks} ATAQUES!`;
   
   modal.classList.remove('hidden');
+  
+  // Reseta automaticamente depois de 8 segundos (para lives 24h)
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    roundEndsAt = Date.now() + roundSeconds * 1000;
+    teams.clear();
+    getOrCreateTeam('flamengo');
+    getOrCreateTeam('corinthians');
+    isModalOpen = false;
+  }, 8000);
 }
-
-document.getElementById('btn-restart').addEventListener('click', () => {
-  const modal = document.getElementById('winner-modal');
-  modal.classList.add('hidden');
-  roundEndsAt = Date.now() + roundSeconds * 1000;
-  teams.clear();
-  getOrCreateTeam('flamengo');
-  getOrCreateTeam('corinthians');
-  isModalOpen = false;
-});
 
 function loop() {
   if (!isModalOpen) {
