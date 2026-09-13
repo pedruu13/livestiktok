@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Luta Presidencial</title>
+  <link rel="stylesheet" href="luta.css">
+</head>
+<body>
+
+  <div id="game-container">
+    <!-- Fundo de Mockup (usado apenas como cenário base se aplicável) -->
+    <div id="background"></div>
+
+    <!-- Interface HUD (Heads Up Display) -->
+    <div id="hud">
+      <!-- BOLSONARO -->
+      <div class="fighter-ui left">
+        <div class="fighter-name">BOLSONARO</div>
+        <div class="hp-bar-bg">
+          <div id="hp-bolso" class="hp-bar-fill"></div>
+        </div>
+        <div id="pct-bolso" class="hp-pct">100%</div>
+      </div>
+      
+      <div id="vs-logo">VS</div>
+
+      <!-- LULA -->
+      <div class="fighter-ui right">
+        <div class="fighter-name">LULA</div>
+        <div class="hp-bar-bg">
+          <div id="hp-lula" class="hp-bar-fill"></div>
+        </div>
+        <div id="pct-lula" class="hp-pct">100%</div>
+      </div>
+    </div>
+
+    <!-- Arena (Personagens) -->
+    <div id="arena">
+      <!-- Os personagens serão cortados via CSS da imagem original -->
+      <div id="bolso-char" class="character left-char"></div>
+      <div id="lula-char" class="character right-char"></div>
+      
+      <!-- Efeitos Visuais (PANCADA!) -->
+      <div id="hit-fx" class="hidden">💥</div>
+    </div>
+
+    <div id="instructions">
+      <h3>COMO JOGAR:</h3>
+      <p>👊 Comente <strong>MITO / 22</strong> para Bolsonaro atacar.</p>
+      <p>👊 Comente <strong>LULA / 13 / FAZ O L</strong> para Lula atacar.</p>
+      <p>🎁 <strong>PRESENTES = DANO MASSIVO (ESPECIAL!)</strong></p>
+      <p id="status">Aguardando conexão...</p>
+    </div>
+  </div>
+
+  <!-- Modal de Vitória -->
+  <div id="winner-modal" class="hidden">
+    <div class="winner-content">
+      <div class="winner-trophy">🏆</div>
+      <h1 id="winner-name">K.O.!</h1>
+      <p id="winner-auto-restart">A próxima rodada começa em 8 segundos...</p>
+    </div>
+  </div>
+
+  <script src="luta.js"></script>
+</body>
+</html>
