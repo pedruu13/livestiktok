@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap');
 
 * {
   margin: 0;
@@ -120,8 +120,8 @@ body {
 
 .character {
   position: absolute;
-  bottom: -20px; /* Desce um pouco pra esconder o corte do joelho */
-  background-size: 100% 100%; /* Força a imagem a preencher a caixa inteira exatamente */
+  bottom: 150px; /* Desce um pouco pra esconder o corte do joelho */
+  background-size: 100% 100%; /* ForÃ§a a imagem a preencher a caixa inteira exatamente */
   background-repeat: no-repeat;
   transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   filter: contrast(1.1) drop-shadow(0px 20px 15px rgba(0,0,0,0.6));
@@ -131,7 +131,7 @@ body {
   background-image: url('assets/bolso_cropped.png');
   height: 400px;
   width: 429px; 
-  left: -90px; /* Corta só o cantinho das costas */
+  left: -150px; /* Corta sÃ³ o cantinho das costas */
   z-index: 3; /* Punho do Bolso fica na frente */
 }
 
@@ -139,13 +139,13 @@ body {
   background-image: url('assets/lula_cropped.png');
   height: 400px;
   width: 378px; 
-  right: -60px;
+  right: -130px;
   z-index: 2;
 }
 
 
 
-/* Animações de Bater */
+/* AnimaÃ§Ãµes de Bater */
 .attacking.left-char {
   transform: translateX(200px) rotate(10deg) scale(1.1);
   z-index: 10;
@@ -156,7 +156,7 @@ body {
   z-index: 10;
 }
 
-/* Animações de Apanhar */
+/* AnimaÃ§Ãµes de Apanhar */
 .hit {
   filter: brightness(1.5) sepia(1) hue-rotate(-50deg) saturate(10) drop-shadow(0 0 20px red) !important;
   transform: translateX(-50px) rotate(-15deg) scaleY(0.9) !important;
@@ -180,7 +180,7 @@ body {
   visibility: hidden;
 }
 
-/* INSTRUÃ‡Ã•ES */
+/* INSTRUÃƒâ€¡Ãƒâ€¢ES */
 #instructions {
   position: absolute;
   bottom: 20px;
@@ -196,7 +196,7 @@ body {
 #instructions p { margin-bottom: 3px; }
 #status { margin-top: 10px; font-weight: bold; color: #10b981; }
 
-/* MODAL DE VITÃ“RIA */
+/* MODAL DE VITÃƒâ€œRIA */
 #winner-modal {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -249,7 +249,7 @@ body {
 
 
 
-/* Feedback visual de coment�rios */
+/* Feedback visual de comentários */
 .floating-text {
   position: absolute;
   font-size: 30px;
@@ -266,3 +266,5 @@ body {
   0% { transform: translate(-50%, 0) scale(1); opacity: 1; }
   100% { transform: translate(-50%, -100px) scale(1.5); opacity: 0; }
 }
+
+
