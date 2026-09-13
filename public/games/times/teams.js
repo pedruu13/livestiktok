@@ -108,7 +108,8 @@ function connectWs() {
       }
 
       if (data.type === 'chat') {
-        const teamKey = findTeamByAlias(data.text);
+        const chatText = data.comment || data.text || data.msg || "";
+        const teamKey = findTeamByAlias(chatText);
         if (teamKey) {
           const team = getOrCreateTeam(teamKey);
           team.addMember(data.userId);
