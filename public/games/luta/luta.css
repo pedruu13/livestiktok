@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,700;0,900;1,900&display=swap');
 
 * {
   margin: 0;
@@ -127,8 +127,8 @@ body {
 }
 
 .character {
-  width: 400px;
-  height: 550px;
+  width: 550px;
+  height: 750px;
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center bottom;
@@ -144,7 +144,58 @@ body {
   background-image: url('assets/lula_clean.png');
 }
 
-/* Animações */
+/* Torcida e Banners (Agora faixas penduradas do topo) */
+.torcida {
+  position: absolute;
+  top: -10px;
+  display: flex;
+  flex-direction: row;
+  gap: 15px;
+  opacity: 0.95;
+  z-index: 1;
+}
+
+.torcida-esquerda {
+  left: 20px;
+}
+
+.torcida-direita {
+  right: 20px;
+}
+
+.banner {
+  background-color: #16a34a; /* Verde mais escuro pra parecer tecido */
+  color: white;
+  padding: 30px 10px 40px 10px;
+  font-size: 26px;
+  font-weight: 900;
+  text-transform: uppercase;
+  /* Formato de Bandeira/Faixa vertical com corte em V embaixo */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 90%, 0 100%);
+  /* Texto de cima pra baixo */
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 5px;
+  box-shadow: 0px 10px 10px rgba(0,0,0,0.5); /* Sombra simples */
+  /* AnimaÃ§Ã£o suave de balanÃ§o de vento */
+  transform-origin: top center;
+  animation: balanco 3s infinite alternate ease-in-out;
+}
+
+.torcida-direita .banner {
+  animation: balanco 3.5s infinite alternate-reverse ease-in-out;
+}
+
+.banner.bg-red {
+  background-color: #dc2626; 
+}
+
+@keyframes balanco {
+  0% { transform: rotate(-3deg); }
+  100% { transform: rotate(3deg); }
+}
+
+/* AnimaÃ§Ãµes */
 .attacking.left-char {
   background-image: url('assets/bolso_punch.png');
   transform: translateX(100px) rotate(5deg);
@@ -178,7 +229,7 @@ body {
   visibility: hidden;
 }
 
-/* INSTRUÇÕES */
+/* INSTRUÃ‡Ã•ES */
 #instructions {
   position: absolute;
   bottom: 20px;
@@ -194,7 +245,7 @@ body {
 #instructions p { margin-bottom: 3px; }
 #status { margin-top: 10px; font-weight: bold; color: #10b981; }
 
-/* MODAL DE VITÓRIA */
+/* MODAL DE VITÃ“RIA */
 #winner-modal {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -244,50 +295,4 @@ body {
 .shake-screen {
   animation: shake 0.3s;
 }
-/* Torcida e Banners */
-.torcida {
-  position: absolute;
-  bottom: 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  opacity: 0.8;
-  z-index: 1;
-}
 
-.torcida-esquerda {
-  left: 50px;
-  animation: bounce 2s infinite alternate ease-in-out;
-}
-
-.torcida-direita {
-  right: 50px;
-  animation: bounce 2.2s infinite alternate-reverse ease-in-out;
-}
-
-.banner {
-  background-color: #22c55e; /* Verde Bolso */
-  color: white;
-  padding: 10px 20px;
-  font-size: 24px;
-  font-weight: 900;
-  border-radius: 5px;
-  border: 3px solid white;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  transform: rotate(-5deg);
-}
-
-.torcida-direita .banner {
-  transform: rotate(5deg);
-}
-
-.banner.bg-red {
-  background-color: #ef4444; /* Vermelho Lula */
-}
-
-@keyframes bounce {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(-20px); }
-}
