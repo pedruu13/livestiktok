@@ -192,3 +192,20 @@ body {
 .winner-trophy { font-size: 80px; margin-bottom: 20px; }
 #winner-name { font-size: 45px; font-weight: 900; text-transform: uppercase; margin-bottom: 10px; }
 #winner-goals { font-size: 24px; color: #cbd5e1; font-weight: 700; }
+#btn-restart {
+  margin-top: 25px;
+  background: #facc15;
+  color: #1e293b;
+  border: none;
+  padding: 15px 30px;
+  font-size: 20px;
+  font-weight: 900;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  transition: transform 0.2s, background 0.2s;
+}
+#btn-restart:hover {
+  transform: scale(1.05);
+  background: #fff;
+}

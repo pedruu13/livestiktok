@@ -1,4 +1,4 @@
-﻿const BRASILEIRAO = {
+const BRASILEIRAO = {
   flamengo: { name: 'Flamengo', color: '#C52728', aliases: ['flamengo', 'mengo', 'mengao', 'fla'] },
   corinthians: { name: 'Corinthians', color: '#ffffff', aliases: ['corinthians', 'timao', 'curingao'] },
   palmeiras: { name: 'Palmeiras', color: '#006437', aliases: ['palmeiras', 'verdao', 'porco'] },
@@ -209,17 +209,17 @@ function announceWinner() {
   desc.textContent = `Com ${winner.goals} GOLS e ${winner.attacks} ATAQUES!`;
   
   modal.classList.remove('hidden');
-  
-  // Reseta depois de 5 segundos
-  setTimeout(() => {
-    modal.classList.add('hidden');
-    roundEndsAt = Date.now() + roundSeconds * 1000;
-    teams.clear();
-    getOrCreateTeam('flamengo');
-    getOrCreateTeam('corinthians');
-    isModalOpen = false;
-  }, 5000);
 }
+
+document.getElementById('btn-restart').addEventListener('click', () => {
+  const modal = document.getElementById('winner-modal');
+  modal.classList.add('hidden');
+  roundEndsAt = Date.now() + roundSeconds * 1000;
+  teams.clear();
+  getOrCreateTeam('flamengo');
+  getOrCreateTeam('corinthians');
+  isModalOpen = false;
+});
 
 function loop() {
   if (!isModalOpen) {
