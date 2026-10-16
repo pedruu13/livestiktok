@@ -1,70 +1,12 @@
-// Jogo Eleição ao Vivo - Urna Eletrônica Interativa
+// Jogo Eleição ao Vivo - Urna Eletrônica Interativa (Otimizado sem Canvas)
 
 const state = {
   votes22: 0,
   votes13: 0,
-  roundDuration: 274, // 04:34 igual da foto
+  roundDuration: 274, // 04:34
   roundEndsAt: Date.now() + 274 * 1000,
   isEnding: false
 };
-
-// Canvas de Rosas e Partículas
-const canvas = document.getElementById('effects-canvas');
-const ctx = canvas.getContext('2d');
-
-function resizeCanvas() {
-  canvas.width = 540;
-  canvas.height = 960;
-}
-resizeCanvas();
-
-let particles = [];
-let lastTime = performance.now();
-
-// Carrega imagens das rosas para partículas
-const imgWhiteRose = new Image();
-imgWhiteRose.src = 'assets/white_rose.png';
-
-const imgRedRose = new Image();
-imgRedRose.src = 'assets/red_rose.png';
-
-class RoseParticle {
-  constructor(candidate) {
-    this.candidate = candidate;
-    this.img = candidate === 22 ? imgWhiteRose : imgRedRose;
-    this.x = candidate === 22 ? Math.random() * 220 + 30 : Math.random() * 220 + 290;
-    this.y = 800;
-    this.vx = (Math.random() - 0.5) * 1.5;
-    this.vy = -(2.5 + Math.random() * 2.5);
-    this.rotation = Math.random() * Math.PI * 2;
-    this.vRot = (Math.random() - 0.5) * 0.08;
-    this.size = 28 + Math.random() * 16;
-    this.life = 1.0;
-  }
-
-  update(dt) {
-    this.x += this.vx * dt;
-    this.y += this.vy * dt;
-    this.rotation += this.vRot * dt;
-    this.life -= 0.012 * dt;
-  }
-
-  draw() {
-    ctx.save();
-    ctx.globalAlpha = Math.max(0, this.life);
-    ctx.translate(this.x, this.y);
-    ctx.rotate(this.rotation);
-    if (this.img.complete && this.img.naturalWidth > 0) {
-      ctx.drawImage(this.img, -this.size / 2, -this.size / 2, this.size, this.size);
-    } else {
-      ctx.font = `${this.size}px Arial`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(this.candidate === 22 ? '⭐' : '🌹', 0, 0);
-    }
-    ctx.restore();
-  }
-}
 
 // Síntese de Som da Urna Eletrônica (Web Audio API)
 let audioCtx = null;
@@ -79,7 +21,7 @@ function getAudioContext() {
   return audioCtx;
 }
 
-// Som de tecla da urna (bip curto)
+// Bip curto de digitação do teclado
 function playKeyBeep() {
   try {
     const actx = getAudioContext();
@@ -137,15 +79,23 @@ let isAnimating22 = false;
 let queue13 = 0;
 let isAnimating13 = false;
 
+function bumpRose(candidate) {
+  const el = document.getElementById(`fixed-rose-${candidate}`);
+  if (el) {
+    el.classList.remove('bump');
+    void el.offsetWidth; // trigger reflow
+    el.classList.add('bump');
+  }
+}
+
 function triggerVote22(voterName = 'Espectador', amount = 1) {
   state.votes22 += amount;
   updateScoreboard();
   addChatBubble(voterName, 22);
+  bumpRose(22);
 
-  // Spawna rosa
-  for (let i = 0; i < Math.min(amount, 3); i++) {
-    particles.push(new RoseParticle(22));
-  }
+  const mult = document.getElementById('mult-22');
+  if (mult) mult.textContent = `x${state.votes22}`;
 
   queue22 += amount;
   if (!isAnimating22) {
@@ -170,7 +120,7 @@ function processHand22() {
   playKeyBeep();
 
   setTimeout(() => {
-    // 2. Mão aperta a tecla (tap down)
+    // 2. Mão aperta a tecla
     hand.classList.add('tap-down');
     tapEffect.classList.add('active');
 
@@ -184,7 +134,7 @@ function processHand22() {
       setTimeout(() => floatPoint.classList.remove('active'), 400);
 
       setTimeout(() => {
-        // 4. Mão desce
+        // 4. Mão desce suavemente
         tapEffect.classList.remove('active', 'confirma-green');
         hand.classList.remove('tap-down', 'typing');
 
@@ -200,11 +150,10 @@ function triggerVote13(voterName = 'Espectador', amount = 1) {
   state.votes13 += amount;
   updateScoreboard();
   addChatBubble(voterName, 13);
+  bumpRose(13);
 
-  // Spawna rosa
-  for (let i = 0; i < Math.min(amount, 3); i++) {
-    particles.push(new RoseParticle(13));
-  }
+  const mult = document.getElementById('mult-13');
+  if (mult) mult.textContent = `x${state.votes13}`;
 
   queue13 += amount;
   if (!isAnimating13) {
@@ -243,7 +192,7 @@ function processHand13() {
       setTimeout(() => floatPoint.classList.remove('active'), 400);
 
       setTimeout(() => {
-        // 4. Mão desce
+        // 4. Mão desce suavemente
         tapEffect.classList.remove('active', 'confirma-green');
         hand.classList.remove('tap-down', 'typing');
 
@@ -363,13 +312,7 @@ function announceWinner() {
   score.textContent = `Resultado: 22 com ${v22} votos vs 13 com ${v13} votos`;
   modal.classList.remove('hidden');
 
-  // Chuva de comemoração
-  for (let i = 0; i < 20; i++) {
-    setTimeout(() => {
-      particles.push(new RoseParticle(winner));
-    }, i * 90);
-  }
-
+  bumpRose(winner);
   playConfirmaSound();
 
   // Reinicia automaticamente em 8 segundos sem travar a live
@@ -386,25 +329,14 @@ function resetRound() {
   state.roundEndsAt = Date.now() + state.roundDuration * 1000;
   updateScoreboard();
   chatStream.innerHTML = '';
+  const m22 = document.getElementById('mult-22');
+  const m13 = document.getElementById('mult-13');
+  if (m22) m22.textContent = 'x1';
+  if (m13) m13.textContent = 'x1';
 }
 
-// Loop Principal de Animação
-function gameLoop(time) {
-  const dt = Math.min(3, (time - lastTime) / 16.67);
-  lastTime = time;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  particles = particles.filter(p => {
-    p.update(dt);
-    p.draw();
-    return p.life > 0 && p.y > -50;
-  });
-
-  updateTimer();
-  requestAnimationFrame(gameLoop);
-}
-requestAnimationFrame(gameLoop);
+// Timer Loop leve (1 segundo)
+setInterval(updateTimer, 500);
 
 // Conexão WebSocket com o Backend
 function connectWebSocket() {
