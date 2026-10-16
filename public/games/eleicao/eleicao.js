@@ -1,279 +1,481 @@
-// Jogo de Eleição - Disputa ao Vivo entre 22 e 13
+// Jogo Eleição ao Vivo - Urna Eletrônica Interativa
 
-const candidates = {
-  22: { votes: 0, color: '#38bdf8' },
-  13: { votes: 0, color: '#ef4444' },
+const state = {
+  votes22: 0,
+  votes13: 0,
+  roundDuration: 274, // 04:34 igual da foto
+  roundEndsAt: Date.now() + 274 * 1000,
+  isEnding: false
 };
 
-const canvas = document.getElementById('rose-canvas');
+// Canvas de Rosas e Partículas
+const canvas = document.getElementById('effects-canvas');
 const ctx = canvas.getContext('2d');
 
 function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = 540;
+  canvas.height = 960;
 }
 resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
 
-let fallingRoses = [];
-const ROUND_SECONDS = 180; // 3 minutos por rodada
-let roundEndsAt = Date.now() + ROUND_SECONDS * 1000;
-let lastT = performance.now();
-let chatMessages = [];
-let isRoundEnding = false;
+let particles = [];
+let lastTime = performance.now();
 
-class FallingRose {
-  constructor(candidateNumber) {
-    this.candidateNumber = candidateNumber;
-    this.x = Math.random() * (canvas.width - 40) + 20;
-    this.y = -30;
-    this.vy = 2 + Math.random() * 3.5;
-    this.vx = (Math.random() - 0.5) * 2;
+// Carrega imagens das rosas para partículas
+const imgWhiteRose = new Image();
+imgWhiteRose.src = 'assets/white_rose.png';
+
+const imgRedRose = new Image();
+imgRedRose.src = 'assets/red_rose.png';
+
+class RoseParticle {
+  constructor(candidate) {
+    this.candidate = candidate;
+    this.img = candidate === 22 ? imgWhiteRose : imgRedRose;
+    this.x = candidate === 22 ? Math.random() * 220 + 30 : Math.random() * 220 + 290;
+    this.y = 800;
+    this.vx = (Math.random() - 0.5) * 1.5;
+    this.vy = -(2.5 + Math.random() * 2.5);
     this.rotation = Math.random() * Math.PI * 2;
-    this.rotationSpeed = (Math.random() - 0.5) * 0.1;
-    this.life = 140;
-    this.size = 28 + Math.random() * 12;
+    this.vRot = (Math.random() - 0.5) * 0.08;
+    this.size = 28 + Math.random() * 16;
+    this.life = 1.0;
   }
 
   update(dt) {
-    this.y += this.vy * dt;
     this.x += this.vx * dt;
-    this.rotation += this.rotationSpeed * dt;
-    this.life -= dt;
+    this.y += this.vy * dt;
+    this.rotation += this.vRot * dt;
+    this.life -= 0.012 * dt;
   }
 
   draw() {
     ctx.save();
-    ctx.globalAlpha = Math.max(this.life / 140, 0);
+    ctx.globalAlpha = Math.max(0, this.life);
     ctx.translate(this.x, this.y);
     ctx.rotate(this.rotation);
-
-    ctx.font = `${this.size}px "Segoe UI Emoji", Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    if (this.candidateNumber === 13) {
-      ctx.shadowColor = 'rgba(239, 68, 68, 0.8)';
-      ctx.shadowBlur = 8;
-      ctx.fillText('🌹', 0, 0);
+    if (this.img.complete && this.img.naturalWidth > 0) {
+      ctx.drawImage(this.img, -this.size / 2, -this.size / 2, this.size, this.size);
     } else {
-      ctx.shadowColor = 'rgba(56, 189, 248, 0.8)';
-      ctx.shadowBlur = 8;
-      ctx.fillText('⭐', 0, 0);
+      ctx.font = `${this.size}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(this.candidate === 22 ? '⭐' : '🌹', 0, 0);
     }
-
     ctx.restore();
   }
 }
 
-function connectWs() {
+// Síntese de Som da Urna Eletrônica (Web Audio API)
+let audioCtx = null;
+
+function getAudioContext() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+}
+
+// Som de tecla da urna (bip curto)
+function playKeyBeep() {
+  try {
+    const actx = getAudioContext();
+    const osc = actx.createOscillator();
+    const gain = actx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1050, actx.currentTime);
+    gain.gain.setValueAtTime(0.12, actx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + 0.06);
+    osc.connect(gain);
+    gain.connect(actx.destination);
+    osc.start();
+    osc.stop(actx.currentTime + 0.07);
+  } catch (e) {}
+}
+
+// Som de CONFIRMA da urna brasileira ("pilililili")
+function playConfirmaSound() {
+  try {
+    const actx = getAudioContext();
+    const now = actx.currentTime;
+
+    // Tom 1: 750 Hz
+    const osc1 = actx.createOscillator();
+    const gain1 = actx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(750, now);
+    gain1.gain.setValueAtTime(0.18, now);
+    gain1.gain.setValueAtTime(0.18, now + 0.12);
+    gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+    osc1.connect(gain1);
+    gain1.connect(actx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.15);
+
+    // Tom 2: 1100 Hz
+    const osc2 = actx.createOscillator();
+    const gain2 = actx.createGain();
+    osc2.type = 'sine';
+    osc2.frequency.setValueAtTime(1100, now + 0.15);
+    gain2.gain.setValueAtTime(0.22, now + 0.15);
+    gain2.gain.setValueAtTime(0.22, now + 0.55);
+    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
+    osc2.connect(gain2);
+    gain2.connect(actx.destination);
+    osc2.start(now + 0.15);
+    osc2.stop(now + 0.65);
+  } catch (e) {}
+}
+
+// Filas de animação das mãos
+let queue22 = 0;
+let isAnimating22 = false;
+
+let queue13 = 0;
+let isAnimating13 = false;
+
+function triggerVote22(voterName = 'Espectador', amount = 1) {
+  state.votes22 += amount;
+  updateScoreboard();
+  addChatBubble(voterName, 22);
+
+  // Spawna rosa
+  for (let i = 0; i < Math.min(amount, 3); i++) {
+    particles.push(new RoseParticle(22));
+  }
+
+  queue22 += amount;
+  if (!isAnimating22) {
+    processHand22();
+  }
+}
+
+function processHand22() {
+  if (queue22 <= 0) {
+    isAnimating22 = false;
+    return;
+  }
+  isAnimating22 = true;
+  queue22 = Math.max(0, queue22 - 1);
+
+  const hand = document.getElementById('hand-22');
+  const tapEffect = document.getElementById('tap-effect-22');
+  const floatPoint = document.getElementById('float-point-22');
+
+  // 1. Mão sobe até o teclado
+  hand.classList.add('typing');
+  playKeyBeep();
+
+  setTimeout(() => {
+    // 2. Mão aperta a tecla (tap down)
+    hand.classList.add('tap-down');
+    tapEffect.classList.add('active');
+
+    setTimeout(() => {
+      // 3. Aperta o verde (Confirma)
+      tapEffect.classList.add('confirma-green');
+      playConfirmaSound();
+
+      // Ponto flutuante
+      floatPoint.classList.add('active');
+      setTimeout(() => floatPoint.classList.remove('active'), 400);
+
+      setTimeout(() => {
+        // 4. Mão desce
+        tapEffect.classList.remove('active', 'confirma-green');
+        hand.classList.remove('tap-down', 'typing');
+
+        setTimeout(() => {
+          processHand22();
+        }, 120);
+      }, 160);
+    }, 100);
+  }, 120);
+}
+
+function triggerVote13(voterName = 'Espectador', amount = 1) {
+  state.votes13 += amount;
+  updateScoreboard();
+  addChatBubble(voterName, 13);
+
+  // Spawna rosa
+  for (let i = 0; i < Math.min(amount, 3); i++) {
+    particles.push(new RoseParticle(13));
+  }
+
+  queue13 += amount;
+  if (!isAnimating13) {
+    processHand13();
+  }
+}
+
+function processHand13() {
+  if (queue13 <= 0) {
+    isAnimating13 = false;
+    return;
+  }
+  isAnimating13 = true;
+  queue13 = Math.max(0, queue13 - 1);
+
+  const hand = document.getElementById('hand-13');
+  const tapEffect = document.getElementById('tap-effect-13');
+  const floatPoint = document.getElementById('float-point-13');
+
+  // 1. Mão sobe até o teclado
+  hand.classList.add('typing');
+  playKeyBeep();
+
+  setTimeout(() => {
+    // 2. Mão aperta a tecla
+    hand.classList.add('tap-down');
+    tapEffect.classList.add('active');
+
+    setTimeout(() => {
+      // 3. Aperta Confirma
+      tapEffect.classList.add('confirma-green');
+      playConfirmaSound();
+
+      // Ponto flutuante
+      floatPoint.classList.add('active');
+      setTimeout(() => floatPoint.classList.remove('active'), 400);
+
+      setTimeout(() => {
+        // 4. Mão desce
+        tapEffect.classList.remove('active', 'confirma-green');
+        hand.classList.remove('tap-down', 'typing');
+
+        setTimeout(() => {
+          processHand13();
+        }, 120);
+      }, 160);
+    }, 100);
+  }, 120);
+}
+
+// Atualiza placar completo e badges
+function updateScoreboard() {
+  const v22 = state.votes22;
+  const v13 = state.votes13;
+  const total = v22 + v13;
+  const diff = Math.abs(v22 - v13);
+
+  const safeTotal = Math.max(total, 1);
+  const pct22 = total === 0 ? 50.0 : ((v22 / safeTotal) * 100);
+  const pct13 = total === 0 ? 50.0 : ((v13 / safeTotal) * 100);
+
+  // Números
+  document.getElementById('votes-22').textContent = v22;
+  document.getElementById('votes-13').textContent = v13;
+  document.getElementById('count-22').textContent = `${v22} votos`;
+  document.getElementById('count-13').textContent = `${v13} votos`;
+
+  // Porcentagens
+  document.getElementById('pct-22').textContent = `${pct22.toFixed(1).replace('.', ',')}%`;
+  document.getElementById('pct-13').textContent = `${pct13.toFixed(1).replace('.', ',')}%`;
+
+  // Barras
+  document.getElementById('bar-22').style.width = `${pct22}%`;
+  document.getElementById('bar-13').style.width = `${pct13}%`;
+
+  // Topo: Total e Diferença
+  document.getElementById('total-votes').textContent = total;
+  document.getElementById('diff-votes').textContent = diff;
+
+  // Badge do Líder
+  const leaderPill = document.getElementById('leader-pill');
+  const crown22 = document.getElementById('crown-22');
+  const crown13 = document.getElementById('crown-13');
+
+  if (v22 > v13) {
+    leaderPill.className = 'leader-pill pill-blue';
+    leaderPill.textContent = '22 NA FRENTE';
+    crown22.classList.remove('hidden');
+    crown13.classList.add('hidden');
+  } else if (v13 > v22) {
+    leaderPill.className = 'leader-pill pill-red';
+    leaderPill.textContent = '13 NA FRENTE';
+    crown22.classList.add('hidden');
+    crown13.classList.remove('hidden');
+  } else {
+    leaderPill.className = 'leader-pill pill-tie';
+    leaderPill.textContent = 'EMPATE';
+    crown22.classList.add('hidden');
+    crown13.classList.add('hidden');
+  }
+}
+
+// Chat de Votantes na tela
+const chatStream = document.getElementById('chat-stream');
+
+function addChatBubble(name, voteNum) {
+  const bubble = document.createElement('div');
+  bubble.className = 'chat-bubble';
+
+  const voteClass = voteNum === 22 ? 'bubble-vote-22' : 'bubble-vote-13';
+  const icon = voteNum === 22 ? '⭐' : '🌹';
+
+  bubble.innerHTML = `
+    <div class="bubble-avatar">${icon}</div>
+    <span class="bubble-name">${escapeHtml(name)}</span>
+    <span class="${voteClass}">${voteNum}</span>
+  `;
+
+  chatStream.appendChild(bubble);
+
+  // Mantém no máximo 5 mensagens
+  if (chatStream.children.length > 5) {
+    chatStream.removeChild(chatStream.firstElementChild);
+  }
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+// Timer e Fim de Rodada
+function updateTimer() {
+  const remaining = Math.max(0, Math.round((state.roundEndsAt - Date.now()) / 1000));
+  const m = String(Math.floor(remaining / 60)).padStart(2, '0');
+  const s = String(remaining % 60).padStart(2, '0');
+  document.getElementById('timer').textContent = `${m}:${s}`;
+
+  if (remaining === 0 && !state.isEnding) {
+    announceWinner();
+  }
+}
+
+function announceWinner() {
+  state.isEnding = true;
+  const v22 = state.votes22;
+  const v13 = state.votes13;
+
+  const winner = v22 >= v13 ? 22 : 13;
+  const modal = document.getElementById('winner-modal');
+  const title = document.getElementById('winner-title');
+  const score = document.getElementById('winner-score');
+
+  title.textContent = `CANDIDATO ${winner} ELEITO! 🏆`;
+  score.textContent = `Resultado: 22 com ${v22} votos vs 13 com ${v13} votos`;
+  modal.classList.remove('hidden');
+
+  // Chuva de comemoração
+  for (let i = 0; i < 20; i++) {
+    setTimeout(() => {
+      particles.push(new RoseParticle(winner));
+    }, i * 90);
+  }
+
+  playConfirmaSound();
+
+  // Reinicia automaticamente em 8 segundos sem travar a live
+  setTimeout(() => {
+    modal.classList.add('hidden');
+    resetRound();
+    state.isEnding = false;
+  }, 8000);
+}
+
+function resetRound() {
+  state.votes22 = 0;
+  state.votes13 = 0;
+  state.roundEndsAt = Date.now() + state.roundDuration * 1000;
+  updateScoreboard();
+  chatStream.innerHTML = '';
+}
+
+// Loop Principal de Animação
+function gameLoop(time) {
+  const dt = Math.min(3, (time - lastTime) / 16.67);
+  lastTime = time;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  particles = particles.filter(p => {
+    p.update(dt);
+    p.draw();
+    return p.life > 0 && p.y > -50;
+  });
+
+  updateTimer();
+  requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
+
+// Conexão WebSocket com o Backend
+function connectWebSocket() {
   const ws = new WebSocket(`ws://${location.host}/ws`);
 
-  ws.onmessage = (msg) => {
+  ws.onmessage = (event) => {
     try {
-      const data = JSON.parse(msg.data);
+      const data = JSON.parse(event.data);
 
       if (data.type === 'change-game') {
         window.location.href = data.url;
         return;
       }
 
-      if (isRoundEnding) return;
+      if (state.isEnding) return;
 
-      // Detecta votos no comentário do chat
+      // 1. COMENTÁRIOS DE VOTO
       if (data.type === 'chat') {
         const rawText = data.comment || data.text || data.msg || "";
         const name = data.nickname || data.name || data.uniqueId || 'Espectador';
         const text = rawText.toLowerCase().trim();
-        let candidateNumber = null;
 
         if (text.includes('22') || text.includes('mito') || text.includes('bolsonaro')) {
-          candidateNumber = 22;
+          triggerVote22(name, 1);
         } else if (text.includes('13') || text.includes('lula') || text.includes('faz o l')) {
-          candidateNumber = 13;
-        }
-
-        if (candidateNumber) {
-          candidates[candidateNumber].votes += 1;
-          spawnRose(candidateNumber);
-          addChatMessage(name, candidateNumber, 1, 'voto');
+          triggerVote13(name, 1);
         }
       }
 
-      // Curtidas (likes) apoiam o candidato que tem menos votos
+      // 2. CURTIDAS (LIKES)
       if (data.type === 'like') {
         const count = data.likeCount || 1;
-        const candidateNumber = candidates[22].votes <= candidates[13].votes ? 22 : 13;
-        candidates[candidateNumber].votes += count;
-        for (let i = 0; i < Math.min(count, 3); i++) {
-          spawnRose(candidateNumber);
+        // Curtidas ajudam quem está perdendo para deixar a live emocionante
+        if (state.votes22 <= state.votes13) {
+          triggerVote22('Live Curtidas', Math.min(count, 2));
+        } else {
+          triggerVote13('Live Curtidas', Math.min(count, 2));
         }
       }
 
-      // Presentes = votos ponderados
+      // 3. PRESENTES (GIFTS)
       if (data.type === 'gift') {
         const rawText = (data.comment || data.text || data.giftName || "").toLowerCase();
         const giftVal = data.diamondCount || data.value || 1;
-        const name = data.nickname || data.name || data.uniqueId || 'Apoiador';
+        const name = data.nickname || data.name || data.uniqueId || 'Apoiador VIP';
 
-        let candidateNumber = 22;
+        const points = Math.max(2, Math.ceil(giftVal * 2));
+
         if (rawText.includes('13') || rawText.includes('lula')) {
-          candidateNumber = 13;
+          triggerVote13(name, points);
         } else if (rawText.includes('22') || rawText.includes('mito')) {
-          candidateNumber = 22;
+          triggerVote22(name, points);
         } else {
-          // Apoia quem está atrás para manter a disputa acirrada
-          candidateNumber = candidates[22].votes <= candidates[13].votes ? 22 : 13;
+          // Se não mencionar, apoia quem está atrás
+          if (state.votes22 <= state.votes13) {
+            triggerVote22(name, points);
+          } else {
+            triggerVote13(name, points);
+          }
         }
-
-        const voteValue = Math.max(2, Math.ceil(giftVal * 2));
-        candidates[candidateNumber].votes += voteValue;
-
-        const spawnCount = Math.min(voteValue, 10);
-        for (let i = 0; i < spawnCount; i++) {
-          setTimeout(() => spawnRose(candidateNumber), i * 70);
-        }
-
-        addChatMessage(name, candidateNumber, voteValue, 'super voto');
       }
+
     } catch (err) {
-      console.error('[Eleicao WS] Erro:', err);
+      console.error('[Urna WS] Erro:', err);
     }
   };
 
   ws.onclose = () => {
-    const st = document.getElementById('status');
-    if (st) {
-      st.textContent = 'Desconectado. Reconectando...';
-      st.style.color = '#ef4444';
-    }
-    setTimeout(connectWs, 2000);
-  };
-
-  ws.onopen = () => {
-    const st = document.getElementById('status');
-    if (st) {
-      st.textContent = 'Conectado! Votação aberta!';
-      st.style.color = '#10b981';
-    }
+    setTimeout(connectWebSocket, 2000);
   };
 }
 
-function spawnRose(candidateNumber) {
-  fallingRoses.push(new FallingRose(candidateNumber));
-}
-
-function addChatMessage(name, candidateNumber, votes, type) {
-  const candidate = candidateNumber === 22 ? '22' : '13';
-  const icon = candidateNumber === 22 ? '⭐' : '🌹';
-  const teamClass = candidateNumber === 22 ? 'team-22' : 'team-13';
-  const msg = `${icon} <strong>${name}</strong> +${votes} voto(s) no <strong>${candidate}</strong>!`;
-
-  chatMessages.unshift({ html: msg, teamClass });
-  if (chatMessages.length > 6) chatMessages.pop();
-
-  renderChat();
-}
-
-function renderChat() {
-  const chatEl = document.getElementById('chat-messages');
-  if (!chatEl) return;
-  chatEl.innerHTML = chatMessages
-    .map((m) => `<div class="chat-msg ${m.teamClass}">${m.html}</div>`)
-    .join('');
-}
-
-function updateScoreboard() {
-  const total = candidates[22].votes + candidates[13].votes;
-  const safeTotal = Math.max(total, 1);
-
-  const pct22 = total === 0 ? 50 : Math.round((candidates[22].votes / safeTotal) * 100);
-  const pct13 = total === 0 ? 50 : 100 - pct22;
-
-  // Candidato 22
-  const v22 = document.getElementById('votes-22');
-  const p22 = document.getElementById('percent-22');
-  const b22 = document.getElementById('bar-22');
-  if (v22) v22.textContent = candidates[22].votes;
-  if (p22) p22.textContent = `${pct22}%`;
-  if (b22) b22.style.width = `${pct22}%`;
-
-  // Candidato 13
-  const v13 = document.getElementById('votes-13');
-  const p13 = document.getElementById('percent-13');
-  const b13 = document.getElementById('bar-13');
-  if (v13) v13.textContent = candidates[13].votes;
-  if (p13) p13.textContent = `${pct13}%`;
-  if (b13) b13.style.width = `${pct13}%`;
-}
-
-function updateTimer() {
-  const remaining = Math.max(0, Math.round((roundEndsAt - Date.now()) / 1000));
-  const m = String(Math.floor(remaining / 60)).padStart(2, '0');
-  const s = String(remaining % 60).padStart(2, '0');
-  const timerEl = document.getElementById('timer');
-  if (timerEl) timerEl.textContent = `${m}:${s}`;
-
-  if (remaining === 0 && !isRoundEnding) {
-    announceWinner();
-  }
-}
-
-function announceWinner() {
-  isRoundEnding = true;
-  const winner = candidates[22].votes >= candidates[13].votes ? 22 : 13;
-  const loser = winner === 22 ? 13 : 22;
-
-  const modal = document.getElementById('winner-modal');
-  const nameEl = document.getElementById('winner-name');
-  const detailsEl = document.getElementById('winner-details');
-
-  if (nameEl) nameEl.textContent = `CANDIDATO ${winner} VENCEU! 🏆`;
-  if (detailsEl) {
-    detailsEl.textContent = `Placar Final: Candidato 22 (${candidates[22].votes}) x Candidato 13 (${candidates[13].votes})`;
-  }
-  if (modal) modal.classList.remove('hidden');
-
-  // Chuva de comemoração
-  for (let i = 0; i < 25; i++) {
-    setTimeout(() => spawnRose(winner), i * 100);
-  }
-
-  // Reinicia automaticamente em 8 segundos sem travar a live
-  setTimeout(() => {
-    if (modal) modal.classList.add('hidden');
-    resetRound();
-    isRoundEnding = false;
-  }, 8000);
-}
-
-function resetRound() {
-  candidates[22].votes = 0;
-  candidates[13].votes = 0;
-  chatMessages = [];
-  fallingRoses = [];
-  roundEndsAt = Date.now() + ROUND_SECONDS * 1000;
-  updateScoreboard();
-  renderChat();
-}
-
-function loop(t) {
-  const dt = Math.min(3, (t - lastT) / 16.67);
-  lastT = t;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  fallingRoses = fallingRoses.filter((r) => {
-    r.update(dt);
-    r.draw();
-    return r.life > 0 && r.y < canvas.height + 50;
-  });
-
-  updateScoreboard();
-  updateTimer();
-
-  requestAnimationFrame(loop);
-}
-
-connectWs();
-requestAnimationFrame(loop);
+connectWebSocket();
+updateScoreboard();

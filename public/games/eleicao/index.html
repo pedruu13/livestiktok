@@ -2,76 +2,152 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🗳️ Eleição ao Vivo</title>
+  <meta name="viewport" content="width=540, height=960, initial-scale=1.0" />
+  <title>🗳️ Eleição ao Vivo - Urna Eletrônica</title>
   <link rel="stylesheet" href="eleicao.css" />
 </head>
 <body>
-  <div id="election-container">
-    <div id="election-header">
-      <h1>🗳️ ELEIÇÃO AO VIVO</h1>
-      <div id="timer">03:00</div>
-    </div>
+  <div id="game-container">
+    
+    <!-- TOP HEADER -->
+    <header id="top-bar">
+      <div class="rose-corner left-rose">
+        <img src="assets/white_rose.png" alt="Rosa Branca" class="rose-img" />
+      </div>
 
-    <div id="candidates-container">
-      <!-- Candidato 22 -->
-      <div class="candidate candidate-white" id="candidate-22">
-        <div class="candidate-number">22</div>
-        <div class="candidate-visual">
-          <img src="/games/luta/assets/bolso_clean.png" class="candidate-photo" alt="22" onerror="this.style.display='none'" />
-          <span class="candidate-emoji">🇧🇷</span>
-        </div>
-        <div class="candidate-name">Candidato 22</div>
-        <div class="candidate-bar-container">
-          <div class="candidate-bar-fill" id="bar-22"></div>
-        </div>
-        <div class="candidate-stats">
-          <div class="candidate-votes" id="votes-22">0</div>
-          <div class="candidate-percentage" id="percent-22">50%</div>
+      <div class="header-center">
+        <div class="interativo-tag">INTERATIVO</div>
+        <div id="timer">04:30</div>
+        
+        <div class="stats-pills">
+          <div class="stat-item">
+            <span class="stat-label">TOTAL</span>
+            <span id="total-votes" class="stat-val">0</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-label">DIFERENÇA</span>
+            <span id="diff-votes" class="stat-val">0</span>
+          </div>
+          <div id="leader-pill" class="leader-pill pill-blue">22 NA FRENTE</div>
         </div>
       </div>
 
-      <!-- Candidato 13 -->
-      <div class="candidate candidate-red" id="candidate-13">
-        <div class="candidate-number">13</div>
-        <div class="candidate-visual">
-          <img src="/games/luta/assets/lula_clean.png" class="candidate-photo" alt="13" onerror="this.style.display='none'" />
-          <span class="candidate-emoji">⭐</span>
+      <div class="rose-corner right-rose">
+        <img src="assets/red_rose.png" alt="Rosa Vermelha" class="rose-img" />
+      </div>
+    </header>
+
+    <!-- SCORE CARDS (PLACAR) -->
+    <section id="scoreboard">
+      <!-- Card 22 (Azul) -->
+      <div class="score-card card-22">
+        <div class="card-header">
+          <span class="cand-badge">22</span>
+          <span id="crown-22" class="crown-badge">👑 NA FRENTE</span>
         </div>
-        <div class="candidate-name">Candidato 13</div>
-        <div class="candidate-bar-container">
-          <div class="candidate-bar-fill" id="bar-13"></div>
+        <div class="card-points">
+          <span id="votes-22" class="points-num">0</span>
+          <span class="points-label">PONTOS</span>
         </div>
-        <div class="candidate-stats">
-          <div class="candidate-votes" id="votes-13">0</div>
-          <div class="candidate-percentage" id="percent-13">50%</div>
+        <div class="progress-wrap">
+          <div id="bar-22" class="progress-bar bar-blue" style="width: 50%;"></div>
+        </div>
+        <div class="card-footer">
+          <span id="pct-22" class="pct-num">50,0%</span>
+          <span id="count-22" class="count-sub">0 votos</span>
         </div>
       </div>
+
+      <!-- Card 13 (Vermelho) -->
+      <div class="score-card card-13">
+        <div class="card-header">
+          <span class="cand-badge">13</span>
+          <span id="crown-13" class="crown-badge hidden">👑 NA FRENTE</span>
+        </div>
+        <div class="card-points">
+          <span id="votes-13" class="points-num">0</span>
+          <span class="points-label">PONTOS</span>
+        </div>
+        <div class="progress-wrap">
+          <div id="bar-13" class="progress-bar bar-red" style="width: 50%;"></div>
+        </div>
+        <div class="card-footer">
+          <span id="pct-13" class="pct-num">50,0%</span>
+          <span id="count-13" class="count-sub">0 votos</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- URNAS ELETRÔNICAS -->
+    <main id="stage">
+      <div class="urnas-wrapper">
+        <!-- Urna 22 -->
+        <div class="urna-box" id="urna-box-22">
+          <div class="urna-inner">
+            <img src="assets/urna_22.png" alt="Urna 22" class="urna-image" />
+            <!-- Efeito de clique nas teclas do 22 -->
+            <div id="tap-effect-22" class="keypad-tap"></div>
+            <div id="float-point-22" class="float-point">+1</div>
+          </div>
+        </div>
+
+        <!-- Urna 13 -->
+        <div class="urna-box" id="urna-box-13">
+          <div class="urna-inner">
+            <img src="assets/urna_13.png" alt="Urna 13" class="urna-image" />
+            <!-- Efeito de clique nas teclas do 13 -->
+            <div id="tap-effect-13" class="keypad-tap"></div>
+            <div id="float-point-13" class="float-point">+1</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mesa de Madeira -->
+      <div class="table-surface"></div>
+      <div class="table-legs">
+        <div class="leg leg-left"></div>
+        <div class="leg leg-mid"></div>
+        <div class="leg leg-right"></div>
+      </div>
+    </main>
+
+    <!-- ÁREA INFERIOR: MÃOS ANIMADAS E CHAT -->
+    <footer id="interaction-zone">
+      <!-- Chat ao Vivo dos Votantes -->
+      <div id="voter-chat">
+        <div id="chat-stream"></div>
+      </div>
+
+      <!-- Mão Esquerda (Vota 22) -->
+      <div id="hand-anchor-22" class="hand-anchor">
+        <img src="assets/hand_22.png" id="hand-22" class="animated-hand" alt="Mão 22" />
+      </div>
+
+      <!-- Mão Direita (Vota 13) -->
+      <div id="hand-anchor-13" class="hand-anchor">
+        <img src="assets/hand_13.png" id="hand-13" class="animated-hand" alt="Mão 13" />
+      </div>
+    </footer>
+
+    <!-- Rosas Flutuantes (Canvas) -->
+    <canvas id="effects-canvas"></canvas>
+
+    <!-- Barra de Regras (Segura para o TikTok - Sem pedir presentes) -->
+    <div id="rules-bar">
+      <span>🗳️ Comente <strong>22</strong> ou <strong>13</strong> para digitar na urna!</span>
+      <span>❤️ <strong>Toque na tela para curtir e apoiar seu candidato!</strong></span>
     </div>
 
-    <!-- Canvas para rosas caindo -->
-    <canvas id="rose-canvas"></canvas>
-
-    <!-- Chat de votos -->
-    <div id="election-chat">
-      <div id="chat-messages"></div>
-    </div>
-
-    <div id="election-instructions">
-      <p>🗳️ Comente <strong>22</strong> ou <strong>13</strong> no chat para votar!</p>
-      <p>❤️ <strong>Mande CURTIDAS para apoiar seu candidato!</strong></p>
-      <p id="status">Aguardando conexão...</p>
-    </div>
-
-    <!-- Modal de Vencedor (Sem travar a live) -->
+    <!-- MODAL DE VITÓRIA (Sem congelar a live) -->
     <div id="winner-modal" class="hidden">
-      <div class="winner-content">
-        <div class="winner-trophy">🏆</div>
-        <h1 id="winner-name">CANDIDATO VENCEU!</h1>
-        <p id="winner-details">Resultado final da votação</p>
-        <div class="winner-sub">Nova rodada começando em instantes...</div>
+      <div class="winner-modal-card">
+        <div class="trophy-icon">🏆</div>
+        <h2 id="winner-title">CANDIDATO 22 ELEITO!</h2>
+        <div id="winner-score" class="winner-score-info">508 VOTOS vs 181 VOTOS</div>
+        <p class="winner-reset-text">Nova votação em instantes...</p>
       </div>
     </div>
+
   </div>
 
   <script src="eleicao.js"></script>
