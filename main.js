@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+﻿const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const express = require('express');
 const { createWsRelay } = require('./src/wsServer');
@@ -51,7 +51,7 @@ let currentTiktokConnection = null;
 
 ipcMain.on('start-connection', async (event, data) => {
   const { username: rawUsername, gameUrl } = data;
-  const username = rawUsername.replace('@', '').trim(); // LIMPEZA AUTOMÁTICA DO ARROBA
+  const username = rawUsername.replace('@', '').trim(); // LIMPEZA AUTOMÃTICA DO ARROBA
   try {
     if (currentTiktokConnection) {
       currentTiktokConnection.disconnect();
@@ -63,7 +63,7 @@ ipcMain.on('start-connection', async (event, data) => {
     const { emitter: tiktokEvents, promise: connectionPromise } = connection;
     
     // Abre a janela do jogo independentemente de a live estar online
-    // Isso é essencial para testes offline.
+    // Isso Ã© essencial para testes offline.
     if (!gameWindow) {
       gameWindow = new BrowserWindow({
         width: 540,
@@ -72,7 +72,7 @@ ipcMain.on('start-connection', async (event, data) => {
         resizable: false,
         autoHideMenuBar: true,
         backgroundColor: '#000000', // <-- EVITA A TELA BRANCA INICIAL
-        show: false, // Só mostra depois que carregar
+        show: false, // SÃ³ mostra depois que carregar
         title: "Pipa Combate - Tela do Jogo",
         webPreferences: {
           autoplayPolicy: 'no-user-gesture-required'
@@ -146,3 +146,4 @@ ipcMain.on('test-event', (event, type) => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+

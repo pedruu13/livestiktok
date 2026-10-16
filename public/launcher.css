@@ -77,8 +77,8 @@ body {
 }
 .games-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
 }
 .game-card {
   background: #1e293b;

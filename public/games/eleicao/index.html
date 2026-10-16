@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🗳️ Eleição ao Vivo</title>
+  <link rel="stylesheet" href="eleicao.css" />
+</head>
+<body>
+  <div id="election-container">
+    <div id="election-header">
+      <h1>🗳️ ELEIÇÃO AO VIVO</h1>
+      <div id="timer">03:00</div>
+    </div>
+
+    <div id="candidates-container">
+      <!-- Candidato 22 -->
+      <div class="candidate candidate-white" id="candidate-22">
+        <div class="candidate-number">22</div>
+        <div class="candidate-visual">
+          <img src="/games/luta/assets/bolso_clean.png" class="candidate-photo" alt="22" onerror="this.style.display='none'" />
+          <span class="candidate-emoji">🇧🇷</span>
+        </div>
+        <div class="candidate-name">Candidato 22</div>
+        <div class="candidate-bar-container">
+          <div class="candidate-bar-fill" id="bar-22"></div>
+        </div>
+        <div class="candidate-stats">
+          <div class="candidate-votes" id="votes-22">0</div>
+          <div class="candidate-percentage" id="percent-22">50%</div>
+        </div>
+      </div>
+
+      <!-- Candidato 13 -->
+      <div class="candidate candidate-red" id="candidate-13">
+        <div class="candidate-number">13</div>
+        <div class="candidate-visual">
+          <img src="/games/luta/assets/lula_clean.png" class="candidate-photo" alt="13" onerror="this.style.display='none'" />
+          <span class="candidate-emoji">⭐</span>
+        </div>
+        <div class="candidate-name">Candidato 13</div>
+        <div class="candidate-bar-container">
+          <div class="candidate-bar-fill" id="bar-13"></div>
+        </div>
+        <div class="candidate-stats">
+          <div class="candidate-votes" id="votes-13">0</div>
+          <div class="candidate-percentage" id="percent-13">50%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Canvas para rosas caindo -->
+    <canvas id="rose-canvas"></canvas>
+
+    <!-- Chat de votos -->
+    <div id="election-chat">
+      <div id="chat-messages"></div>
+    </div>
+
+    <div id="election-instructions">
+      <p>🗳️ Comente <strong>22</strong> ou <strong>13</strong> no chat para votar!</p>
+      <p>❤️ <strong>Mande CURTIDAS para apoiar seu candidato!</strong></p>
+      <p id="status">Aguardando conexão...</p>
+    </div>
+
+    <!-- Modal de Vencedor (Sem travar a live) -->
+    <div id="winner-modal" class="hidden">
+      <div class="winner-content">
+        <div class="winner-trophy">🏆</div>
+        <h1 id="winner-name">CANDIDATO VENCEU!</h1>
+        <p id="winner-details">Resultado final da votação</p>
+        <div class="winner-sub">Nova rodada começando em instantes...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="eleicao.js"></script>
+</body>
+</html>

@@ -19,9 +19,11 @@ document.querySelectorAll('.game-card').forEach((card) => {
 
 // Atalhos de teclado
 document.addEventListener('keydown', (e) => {
-  if (e.key === '1') document.querySelectorAll('.game-card')[0].click();
-  if (e.key === '2') document.querySelectorAll('.game-card')[1].click();
-  if (e.key === '3') document.querySelectorAll('.game-card')[2].click();
+  const cards = document.querySelectorAll('.game-card');
+  const index = parseInt(e.key) - 1;
+  if (!isNaN(index) && index >= 0 && index < cards.length) {
+    cards[index].click();
+  }
 });
 
 // Lógica de Conexão
